@@ -7,13 +7,20 @@ const compression = require("compression");
 const { RateLimiterMemory } = require("rate-limiter-flexible");
 const { errorHandler } = require("./middleware/errorhandler");
 
+// Import routes
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const budgetRoutes = require('./routes/budget.routes');
+const categoryRoutes = require('./routes/category.routes');
+const transactionRoutes = require('./routes/transaction.routes');
+
 dotenv.config();
 const app = express();
 
-//configure rate limiter
+// Configure rate limiter
 const rateLimiter = new RateLimiterMemory({
-  points: parseInt(process.env.RATE_LIMIT_MAX),
-  duration: parseInt(process.env.RATE_LIMIT_WINDOW)
+  points: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+  duration: parseInt(process.env.RATE_LIMIT_WINDOW) || 15
 });
 
 const rateLimiterMiddleware = (req, res, next) => {
@@ -30,15 +37,15 @@ const rateLimiterMiddleware = (req, res, next) => {
     });
 };
 
-//security and rate limiting
+// Security and rate limiting
 app.use("/api/", rateLimiterMiddleware);
 app.use(helmet());
 
-//body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-//cors configuration
+// CORS configuration
 app.use(
   cors({
     origin:
@@ -49,31 +56,46 @@ app.use(
   })
 );
 
-//logging
+// Serve static files (profile pictures)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-//compression
+// Compression
 app.use(compression());
 
+// Health check
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     success: true,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    service: "Fiscal Focus API",
+    version: "1.0.0"
   });
 });
 
-//404 handler
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/transactions', transactionRoutes);
+
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route not found"
+    message: "Route not found",
+    path: req.path,
+    method: req.method
   });
 });
 
-//error handling middleware (must be last)
+// Error handling middleware (must be last)
 app.use(errorHandler);
 
 module.exports = app;

@@ -30,3 +30,10 @@ Why Use is: It allows your frontend (http://localhost:3000) to call your backend
 
 13. nodemon: this package is used to automatically restarts your server everytime you change your code.
 
+14. nodemailer: this package allow your backend to send emails (OTP, verification, password reset, notifications).
+
+15. ejs: this package is used to create clean, reusable, and dynamic email templates (insert name, OTP, links).
+
+16. express-validator: this package is used to validate and sanitize user input before processing it. if you don’t use it, users can submit empty or invalid data, higher risk of bugs and crashes, your backend becomes easier to abuse with bad or malicious input.
+
+17. multer: this package is used to handle file uploads in your backend (images, documents, profile pictures, PDFs, etc.). It allows the server to accept files from forms (multipart/form-data), control file size and type, decide where and how files are stored.
