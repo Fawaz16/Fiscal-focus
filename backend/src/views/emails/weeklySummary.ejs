@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Financial Summary</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="max-w-3xl mx-auto p-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl p-8 text-center text-white">
+      <div class="inline-block p-4 bg-white/20 rounded-full mb-4">
+        <span class="text-3xl">📊</span>
+      </div>
+      <h1 class="text-3xl font-bold mb-2">Weekly Financial Summary</h1>
+      <p class="text-blue-100">Your financial overview for the past week</p>
+      <p class="text-sm text-blue-200 mt-2">
+        <%= summary.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %> 
+        - <%= summary.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+      </p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="bg-white rounded-b-2xl shadow-xl p-8">
+      <!-- Welcome -->
+      <div class="mb-8 text-center">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Hello <%= user.name %>,</h2>
+        <p class="text-gray-600">
+          Here's your financial summary for the past week. Let's see how you did!
+        </p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-green-50 p-6 rounded-xl border border-green-200">
+          <div class="text-green-600 font-bold text-3xl mb-2">$<%= summary.income.toFixed(2) %></div>
+          <div class="text-green-700 font-semibold">Income</div>
+          <div class="text-green-600 text-sm mt-1">💰 Money coming in</div>
+        </div>
+        
+        <div class="bg-red-50 p-6 rounded-xl border border-red-200">
+          <div class="text-red-600 font-bold text-3xl mb-2">$<%= summary.expenses.toFixed(2) %></div>
+          <div class="text-red-700 font-semibold">Expenses</div>
+          <div class="text-red-600 text-sm mt-1">📉 Money going out</div>
+        </div>
+        
+        <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+          <div class="text-blue-600 font-bold text-3xl mb-2">$<%= summary.net.toFixed(2) %></div>
+          <div class="text-blue-700 font-semibold">Net Balance</div>
+          <div class="text-blue-600 text-sm mt-1">
+            <%= summary.net >= 0 ? '✅ Surplus' : '⚠️ Deficit' %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="mb-10">
+        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="mr-2">📈</span> Spending by Category
+        </h3>
+        
+        <% if (Object.keys(summary.categories).length > 0) { %>
+          <div class="space-y-4">
+            <% Object.entries(summary.categories).forEach(([category, amount]) => { %>
+              <div class="flex items-center">
+                <div class="w-1/4">
+                  <span class="font-medium text-gray-700"><%= category %></span>
+                </div>
+                <div class="w-2/3">
+                  <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-blue-400 to-purple-500 h-3 rounded-full" 
+                         style=""><%= (amount / summary.expenses * 100) %></div>
+                  </div>
+                </div>
+                <div class="w-1/12 text-right">
+                  <span class="font-bold text-gray-800">$<%= amount.toFixed(2) %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="text-center py-8 bg-gray-50 rounded-xl">
+            <span class="text-4xl mb-4 block">📭</span>
+            <p class="text-gray-500">No expenses recorded this week</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Weekly Insights -->
+      <div class="mb-10">
+        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="mr-2">💡</span> Weekly Insights
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-indigo-50 p-6 rounded-xl">
+            <div class="flex items-center mb-3">
+              <span class="text-2xl mr-3">💳</span>
+              <h4 class="font-semibold text-indigo-700">Transaction Count</h4>
+            </div>
+            <p class="text-3xl font-bold text-indigo-800 mb-2"><%= summary.transactionCount %></p>
+            <p class="text-sm text-indigo-600">transactions this week</p>
+          </div>
+          
+          <div class="bg-teal-50 p-6 rounded-xl">
+            <div class="flex items-center mb-3">
+              <span class="text-2xl mr-3">📅</span>
+              <h4 class="font-semibold text-teal-700">Daily Average</h4>
+            </div>
+            <p class="text-3xl font-bold text-teal-800 mb-2">$<%= summary.averageDailySpending.toFixed(2) %></p>
+            <p class="text-sm text-teal-600">spent per day on average</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips & Recommendations -->
+      <div class="mb-10">
+        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="mr-2">🎯</span> Tips for Next Week
+        </h3>
+        
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <% const tips = [
+              { icon: '💰', text: 'Try to reduce dining out expenses by 10%' },
+              { icon: '📱', text: 'Use the mobile app for quick expense tracking' },
+              { icon: '🎯', text: 'Set specific goals for next week\'s spending' }
+            ]; %>
+            
+            <% tips.forEach(tip => { %>
+              <div class="flex items-start">
+                <span class="text-2xl mr-3"><%= tip.icon %></span>
+                <p class="text-gray-700"><%= tip.text %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col md:flex-row gap-4 justify-center mb-8">
+        <a href="<%= process.env.FRONTEND_DEV_URL %>/dashboard" 
+           class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 text-center">
+          View Full Dashboard
+        </a>
+        <a href="<%= process.env.FRONTEND_DEV_URL %>/transactions" 
+           class="inline-block bg-gray-800 hover:bg-black text-white font-semibold py-3 px-8 rounded-lg transition duration-300 text-center">
+          Review Transactions
+        </a>
+      </div>
+
+      <!-- Fun Fact -->
+      <div class="text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-8">
+        <p class="text-gray-700 italic">
+          "Did you know? Saving just $5 per day adds up to $1,825 in a year!"
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-8 text-gray-500 text-sm">
+      <div class="flex justify-center space-x-6 mb-4">
+        <a href="#" class="text-gray-400 hover:text-blue-600">Privacy Policy</a>
+        <a href="#" class="text-gray-400 hover:text-blue-600">Terms of Service</a>
+        <a href="<%= process.env.FRONTEND_DEV_URL %>/unsubscribe" class="text-gray-400 hover:text-blue-600">Unsubscribe</a>
+      </div>
+      <p>This is an automated weekly summary from Fiscal Focus.</p>
+      <p class="mt-1">© <%= year %> Fiscal Focus. Helping you take control of your finances.</p>
+      <p class="mt-2 text-xs text-gray-400">
+        You're receiving this email because you subscribed to weekly summaries.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Simple chart for category breakdown (email-safe)
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add small progress bars for each category
+      document.querySelectorAll('.progress-bar').forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        bar.style.width = width + '%';
+      });
+    });
+  </script>
+</body>
+</html>

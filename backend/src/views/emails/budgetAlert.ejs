@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Alert</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="max-w-2xl mx-auto p-6">
+    <!-- Alert Header -->
+    <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-t-2xl p-6 text-center text-white">
+      <div class="inline-block p-3 bg-white/20 rounded-full mb-4">
+        <span class="text-3xl">⚠️</span>
+      </div>
+      <h1 class="text-2xl font-bold mb-2">Budget Alert!</h1>
+      <p class="text-orange-100">You're approaching your spending limit</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="bg-white rounded-b-2xl shadow-lg p-8">
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-3">Hello <%= user.name %>,</h2>
+        <p class="text-gray-700 mb-6">
+          We noticed that you've spent <span class="font-bold text-red-600"><%= budget.percentage %>%</span> 
+          of your budget for the <span class="font-semibold"><%= category.name %></span> category.
+        </p>
+
+        <!-- Budget Progress -->
+        <div class="mb-8">
+          <div class="flex justify-between mb-2">
+            <span class="text-sm font-medium text-gray-700"><%= category.name %></span>
+            <span class="text-sm font-medium text-red-600"><%= budget.percentage %>% used</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="bg-gradient-to-r from-orange-400 to-red-500 h-3 rounded-full" 
+                 style=""><%= Math.min(budget.percentage, 100) %></div>
+          </div>
+          <div class="flex justify-between mt-2 text-sm text-gray-500">
+            <span>Spent: $<%= budget.spent.toFixed(2) %></span>
+            <span>Budget: $<%= category.monthly_budget.toFixed(2) %></span>
+          </div>
+        </div>
+
+        <!-- Alert Details -->
+        <div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-8">
+          <div class="flex items-start">
+            <span class="text-red-600 mr-3">ℹ️</span>
+            <div>
+              <h3 class="font-semibold text-red-700 mb-2">Alert Details</h3>
+              <ul class="text-sm text-red-700 space-y-1">
+                <li>• Alert triggered at <%= category.budget_threshold %>% of budget</li>
+                <li>• You have $<%= (category.monthly_budget - budget.spent).toFixed(2) %> remaining for this category</li>
+                <li>• Current spending rate: $<%= (budget.spent / new Date().getDate()).toFixed(2) %>/day</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Steps -->
+        <div class="mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">💡 Recommended Actions:</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <div class="text-blue-600 font-semibold mb-2">1. Review Recent Spending</div>
+              <p class="text-sm text-gray-700">Check your recent transactions in this category</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+              <div class="text-green-600 font-semibold mb-2">2. Adjust Budget</div>
+              <p class="text-sm text-gray-700">Consider increasing your budget if needed</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+              <div class="text-purple-600 font-semibold mb-2">3. Find Alternatives</div>
+              <p class="text-sm text-gray-700">Look for cheaper alternatives or reduce usage</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg">
+              <div class="text-yellow-600 font-semibold mb-2">4. Pause Spending</div>
+              <p class="text-sm text-gray-700">Consider pausing non-essential spending in this category</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="text-center">
+          <a href="<%= process.env.FRONTEND_DEV_URL %>/dashboard/budget" 
+             class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-md hover:shadow-lg">
+            Review Your Budget →
+          </a>
+        </div>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="border-t border-gray-200 pt-6">
+        <p class="text-gray-500 text-sm mb-4">
+          🔔 You're receiving this alert because you enabled budget notifications in your settings.
+        </p>
+        <p class="text-gray-400 text-xs">
+          To change your notification preferences, visit your 
+          <a href="<%= process.env.FRONTEND_DEV_URL %>/settings" class="text-blue-500 hover:text-blue-700">account settings</a>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-8 text-gray-500 text-sm">
+      <p>This is an automated message from Fiscal Focus.</p>
+      <p class="mt-1">© <%= year %> Fiscal Focus. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
