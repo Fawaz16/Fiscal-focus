@@ -1,4 +1,4 @@
-const { Category, Transaction } = require('../model/index');
+const { Category, Transaction } = require('../models/index');
 
 class CategoryController {
   static async createCategory(req, res, next) {

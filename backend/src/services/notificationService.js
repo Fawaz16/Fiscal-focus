@@ -1,5 +1,5 @@
 const EmailService = require('./emailService');
-const { User, Category, Budget, Transaction } = require('../model/index');
+const { User, Category, Budget, Transaction } = require('../models/index');
 
 class NotificationService {
   static async checkBudgetAlerts(userId) {

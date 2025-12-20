@@ -1,7 +1,6 @@
-const app = require("./app");
-const { sequelize } = require("./config/db");
-require("./config/associations"); // Import associations
-
+const app = require("./src/app");
+const { sequelize } = require("./src/config/db");
+require("./src/models/index");
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
@@ -16,10 +15,10 @@ const startServer = async () => {
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-      console.log(`🔗 Server URL: ${process.env.SERVER_URL || `http://localhost:${PORT}`}`);
-      console.log(`👤 SMTP User: ${process.env.SMTP_USER}`);
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV}`);
+      console.log(`Server URL: ${process.env.SERVER_URL || `http://localhost:${PORT}`}`);
+      console.log(`SMTP User: ${process.env.SMTP_USER}`);
     });
   } catch (err) {
     console.error('❌ Unable to connect to database: ', err);

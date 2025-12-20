@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Transaction, Category, Budget } = require('../model/index');
+const { Transaction, Category, Budget } = require('../models/index');
 const NotificationService = require('../services/notificationService');
 
 class TransactionController {

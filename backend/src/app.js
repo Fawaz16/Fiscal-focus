@@ -6,13 +6,14 @@ const morgan = require("morgan");
 const compression = require("compression");
 const { RateLimiterMemory } = require("rate-limiter-flexible");
 const { errorHandler } = require("./middleware/errorhandler");
+const path = require("path");
 
 // Import routes
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
-const budgetRoutes = require('./routes/budget.routes');
-const categoryRoutes = require('./routes/category.routes');
-const transactionRoutes = require('./routes/transaction.routes');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const budgetRoutes = require('./routes/budgetRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 
 dotenv.config();
 const app = express();

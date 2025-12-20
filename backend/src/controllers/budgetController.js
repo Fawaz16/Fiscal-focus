@@ -1,4 +1,4 @@
-const { Budget, Category, Transaction } = require('../model/index');
+const { Budget, Category, Transaction } = require('../models/index');
 
 class BudgetController {
   static async createBudget(req, res, next) {

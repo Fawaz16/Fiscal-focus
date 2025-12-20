@@ -1,9 +1,8 @@
 const crypto = require("crypto");
-const crypto = require("crypto");
 const { Op } = require("sequelize");
-const { User, PasswordReset } = require("../config/associations");
+const { User, PasswordReset } = require("../models/index");
 const { generateToken } = require("../middleware/auth");
-const EmailService = require("../services/email.service");
+const EmailService = require("../services/emailService");
 
 class AuthController {
   static async register(req, res, next) {
