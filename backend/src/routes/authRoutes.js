@@ -100,6 +100,8 @@ router.post('/login', validate(loginValidation), AuthController.login);
 router.post('/forgot-password', validate(forgotPasswordValidation), AuthController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordValidation), AuthController.resetPassword);
 router.get('/verify-email/:token', AuthController.verifyEmail);
+router.post('/resend-verification', AuthController.resendVerificationEmail);
+
 
 // Protected routes
 router.get('/profile', auth, AuthController.getProfile);
@@ -120,4 +122,5 @@ router.delete(
   auth,
   AuthController.removeProfilePicture
 );
+
 module.exports = router;

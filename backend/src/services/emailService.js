@@ -1,5 +1,6 @@
 const transporter = require('../config/email');
 const templates = require('../utils/templates/emailTemplates');
+const server_url = process.env.NODE_ENV === 'production' ? process.env.FRONTEND_PROD_URL : process.env.FRONTEND_DEV_URL;
 
 class EmailService {
   static async sendEmail(to, subject, html) {
@@ -30,7 +31,7 @@ class EmailService {
   }
 
   static async sendVerificationEmail(user, token) {
-    const verificationUrl = `${process.env.FRONTEND_PROD_URL}/verify-email?token=${token}`;
+    const verificationUrl = `${server_url}/verify-email?token=${token}`;
     const html = await templates.verification(user, verificationUrl);
     return await this.sendEmail(
       user.email,
@@ -40,7 +41,7 @@ class EmailService {
   }
 
   static async sendPasswordResetEmail(user, token) {
-    const resetUrl = `${process.env.FRONTEND_PROD_URL}/reset-password?token=${token}`;
+    const resetUrl = `${server_url}/reset-password?token=${token}`;
     const html = await templates.passwordReset(user, resetUrl);
     return await this.sendEmail(
       user.email,

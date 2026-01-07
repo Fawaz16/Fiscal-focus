@@ -14,8 +14,7 @@
 5. [Error Handling](#error-handling)
 6. [Rate Limiting](#rate-limiting)
 7. [Real-time Updates](#real-time-updates)
-8. [Testing](#testing)
-9. [Deployment](#deployment)
+8. [Deployment](#deployment)
 
 ## API Overview
 
@@ -538,60 +537,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-### Balance Management Endpoints
-
-#### 1. Get Current Balance
-**GET** `/user/balance/balance`
-
-**Headers:**
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "balance": 800.00,
-    "totalIncome": 2000.00,
-    "totalExpenses": 1200.00,
-    "transactionCount": 25,
-    "timestamp": "2024-01-15T14:30:00.000Z"
-  }
-}
-```
-
-#### 2. Get Balance Update
-**GET** `/user/balance/update`
-
-**Query Parameters:**
-- `transaction_id`: (Optional) Transaction ID to calculate change
-
-**Example Request:**
-```
-GET /user/balance/update?transaction_id=770e8400-e29b-41d4-a716-446655440011
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "current_balance": 800.00,
-    "previous_balance": 845.50,
-    "change": -45.50,
-    "today_spending": 45.50,
-    "monthly_budget": 1500.00,
-    "monthly_spent": 1200.00,
-    "monthly_remaining": 300.00,
-    "budget_utilization": 80.00,
-    "timestamp": "2024-01-15T14:30:00.000Z"
-  }
-}
-```
-
 #### 3. Get Balance Forecast
 **GET** `/user/balance/forecast`
 
@@ -703,6 +648,24 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   }
 }
 ```
+
+#### 6. Delete User Account
+**GET** `/user/delete`
+
+**Example Request:**
+```
+GET /user/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "User account deleted successfully"
+}
+```
+
 
 ### Budgets Endpoints
 

@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const { User, Category, Budget, Transaction } = require("../models/index");
 const BalanceService = require("../services/balanceService");
 
@@ -345,6 +345,35 @@ class UserController {
     } catch (error) {
       console.error("Error checking budget alerts:", error);
       return [];
+    }
+  }
+
+  // Delete User Account
+  static async deleteUser(req, res, next) {
+    try {
+      const userId = req.user.id;
+
+      //Delete related data first
+      await Transaction.destroy({ where: { user_id: userId } });
+      await Budget.destroy({ where: { user_id: userId } });
+      await Category.destroy({ where: { user_id: userId } });
+
+      //Finally delete the user
+      const deleted = await User.destroy({
+        where: { id: userId }
+      });
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+      return res.json({
+        success: true,
+        message: "User account deleted successfully"
+      });
+    } catch (error) {
+      next(error);
     }
   }
 }

@@ -5,5 +5,6 @@ const { auth } = require('../middleware/auth');
 
 router.get('/dashboard', auth, UserController.getDashboard);
 router.get('/summary/:period', auth, UserController.getFinancialSummary);
+router.delete('/delete', auth, UserController.deleteUser);
 
 module.exports = router;

@@ -383,6 +383,48 @@ class AuthController {
       next(error);
     }
   }
+
+  static async resendVerificationEmail(req, res, next) {
+    try {
+      const { email } = req.body;
+
+      // Find user
+      const user = await User.findOne({ where: { email } });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      if (user.is_verified) {
+        return res.status(400).json({
+          success: false,
+          message: "Email is already verified"
+        });
+      }
+
+      // Generate new verification token
+      const verificationToken = crypto.randomBytes(32).toString("hex");
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      // Update user with new token
+      user.verification_token = verificationToken;
+      user.verification_expires = verificationExpires;
+      await user.save();
+
+      // Send verification email
+      await EmailService.sendVerificationEmail(user, verificationToken);
+
+      res.json({
+        success: true,
+        message: "Verification email resent successfully"
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = AuthController;

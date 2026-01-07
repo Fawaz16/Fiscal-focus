@@ -3,7 +3,7 @@ const path = require('path');
 
 const renderTemplate = async (templateName, data) => {
   try {
-    const templatePath = path.join(__dirname, `../views/emails/${templateName}.ejs`);
+    const templatePath = path.join(__dirname, `../../views/emails/${templateName}.ejs`);
     const html = await ejs.renderFile(templatePath, data);
     return html;
   } catch (error) {

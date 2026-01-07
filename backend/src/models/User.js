@@ -52,7 +52,7 @@ const User = sequelize.define('User', {
   },
   currency: {
     type: DataTypes.STRING,
-    defaultValue: 'USD',
+    defaultValue: 'GBP',
   },
   monthly_income: {
     type: DataTypes.DECIMAL(10, 2),
