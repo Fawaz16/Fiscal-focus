@@ -14,6 +14,7 @@ const userRoutes = require('./routes/userRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const balanceRoutes = require('./routes/balanceRoutes');
 
 dotenv.config();
 const app = express();
@@ -85,6 +86,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/user/balance', balanceRoutes);
 
 // 404 handler
 app.use((req, res) => {

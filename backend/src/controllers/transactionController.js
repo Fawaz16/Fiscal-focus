@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { Transaction, Category, Budget } = require('../models/index');
 const NotificationService = require('../services/notificationService');
+const BalanceService = require('../services/balanceService');
 
 class TransactionController {
   static async createTransaction(req, res, next) {
@@ -50,13 +51,106 @@ class TransactionController {
         budget_id: budget?.id || null
       });
 
+      // Get updated balance after transaction
+      const balanceUpdate = await BalanceService.getBalanceUpdate(userId, transaction.id);
+
       // Check for budget alerts
       await NotificationService.checkBudgetAlerts(userId);
 
       res.status(201).json({
         success: true,
         message: 'Transaction created successfully',
-        data: { transaction }
+        data: {
+          transaction,
+          balanceUpdate // Include balance update in response
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateTransaction(req, res, next) {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+
+      const transaction = await Transaction.findOne({
+        where: {
+          id,
+          user_id: req.user.id
+        }
+      });
+
+      if (!transaction) {
+        return res.status(404).json({
+          success: false,
+          message: 'Transaction not found'
+        });
+      }
+
+      // Store old values for balance calculation
+      const oldAmount = transaction.amount;
+      const oldType = transaction.type;
+
+      // Update transaction
+      await transaction.update(updates);
+
+      // Get updated balance
+      const balanceUpdate = await BalanceService.getBalanceUpdate(req.user.id, transaction.id);
+
+      // Check for budget alerts
+      await NotificationService.checkBudgetAlerts(req.user.id);
+
+      res.json({
+        success: true,
+        message: 'Transaction updated successfully',
+        data: {
+          transaction,
+          balanceUpdate // Include balance update in response
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteTransaction(req, res, next) {
+    try {
+      const { id } = req.params;
+
+      const transaction = await Transaction.findOne({
+        where: {
+          id,
+          user_id: req.user.id
+        }
+      });
+
+      if (!transaction) {
+        return res.status(404).json({
+          success: false,
+          message: 'Transaction not found'
+        });
+      }
+
+      // Store transaction info for balance calculation
+      const transactionInfo = {
+        amount: transaction.amount,
+        type: transaction.type
+      };
+
+      // Delete transaction
+      await transaction.destroy();
+
+      // Get updated balance
+      const balanceUpdate = await BalanceService.getBalanceUpdate(req.user.id);
+
+      res.json({
+        success: true,
+        message: 'Transaction deleted successfully',
+        data: {
+          balanceUpdate // Include balance update in response
+        }
       });
     } catch (error) {
       next(error);
@@ -161,83 +255,6 @@ class TransactionController {
       res.json({
         success: true,
         data: { transaction }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async updateTransaction(req, res, next) {
-    try {
-      const { id } = req.params;
-      const updates = req.body;
-
-      const transaction = await Transaction.findOne({
-        where: {
-          id,
-          user_id: req.user.id
-        }
-      });
-
-      if (!transaction) {
-        return res.status(404).json({
-          success: false,
-          message: 'Transaction not found'
-        });
-      }
-
-      // If changing date, update budget association
-      if (updates.date) {
-        const newDate = new Date(updates.date);
-        const budget = await Budget.findOne({
-          where: {
-            user_id: req.user.id,
-            month: newDate.getMonth() + 1,
-            year: newDate.getFullYear(),
-            is_active: true
-          }
-        });
-        updates.budget_id = budget?.id || null;
-      }
-
-      await transaction.update(updates);
-
-      // Check for budget alerts
-      await NotificationService.checkBudgetAlerts(req.user.id);
-
-      res.json({
-        success: true,
-        message: 'Transaction updated successfully',
-        data: { transaction }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async deleteTransaction(req, res, next) {
-    try {
-      const { id } = req.params;
-
-      const transaction = await Transaction.findOne({
-        where: {
-          id,
-          user_id: req.user.id
-        }
-      });
-
-      if (!transaction) {
-        return res.status(404).json({
-          success: false,
-          message: 'Transaction not found'
-        });
-      }
-
-      await transaction.destroy();
-
-      res.json({
-        success: true,
-        message: 'Transaction deleted successfully'
       });
     } catch (error) {
       next(error);
