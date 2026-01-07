@@ -1,5 +1,3 @@
-I'll update the entire documentation to reflect the modifications (removing WebSocket and adding Balance endpoints). Here's the revised comprehensive documentation:
-
 # 📚 Fiscal Focus Backend API Documentation
 
 ## Table of Contents
