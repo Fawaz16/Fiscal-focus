@@ -1781,18 +1781,6 @@ TEST_DB_STORAGE=./test_database.db
 JWT_SECRET=test_secret
 ```
 
-### Running Tests
-```bash
-# Run all tests
-npm test
-
-# Run specific test file
-npm test -- auth.test.js
-
-# Run with coverage
-npm run test:coverage
-```
-
 ## Deployment
 
 ### Environment Variables for Production
