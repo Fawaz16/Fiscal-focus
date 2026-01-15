@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Transaction, Budget } = require('../config/db');
+const { Transaction, Budget, User } = require('../models/index');
 
 class BalanceService {
   /**
@@ -12,6 +12,15 @@ class BalanceService {
         where: { user_id: userId },
         attributes: ['type', 'amount', 'date']
       });
+
+      if (!transactions || transactions.length === 0) {
+        return {
+          currentBalance: 0,
+          totalIncome: 0,
+          totalExpenses: 0,
+          transactionCount: 0
+        };
+      }
 
       // Calculate total income and expenses
       let totalIncome = 0;

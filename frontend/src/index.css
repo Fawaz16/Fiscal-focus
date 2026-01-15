@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+/* -----------------------------
+   THEME VARIABLES
+--------------------------------*/
+@theme {
+  --color-primary-50: 240 249 255;
+  --color-primary-100: 224 242 254;
+  --color-primary-200: 186 230 253;
+  --color-primary-300: 125 211 252;
+  --color-primary-400: 56 189 248;
+  --color-primary-500: 14 165 233;
+  --color-primary-600: 2 132 199;
+  --color-primary-700: 3 105 161;
+  --color-primary-800: 7 89 133;
+  --color-primary-900: 12 74 110;
+
+  --color-secondary-50: 248 250 252;
+  --color-secondary-100: 241 245 249;
+  --color-secondary-200: 226 232 240;
+  --color-secondary-300: 203 213 225;
+  --color-secondary-400: 148 163 184;
+  --color-secondary-500: 100 116 139;
+  --color-secondary-600: 71 85 105;
+  --color-secondary-700: 51 65 85;
+  --color-secondary-800: 30 41 59;
+  --color-secondary-900: 15 23 42;
+
+  --color-success-500: 16 185 129;
+  --color-warning-500: 245 158 11;
+  --color-danger-500: 239 68 68;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* -----------------------------
+   ANIMATIONS (v4 way)
+--------------------------------*/
+@layer utilities {
+  @keyframes slide-up {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+}
+
+/* -------------------------------
+   Fonts
+-------------------------------- */
+
+/* -------------------------------
+   Theme tokens (Tailwind v4 way)
+-------------------------------- */
+@theme {
+  /* Primary */
+  --color-primary-50: 240 249 255;
+  --color-primary-100: 224 242 254;
+  --color-primary-200: 186 230 253;
+  --color-primary-300: 125 211 252;
+  --color-primary-400: 56 189 248;
+  --color-primary-500: 14 165 233;
+  --color-primary-600: 2 132 199;
+  --color-primary-700: 3 105 161;
+
+  /* Gray / Secondary */
+  --color-gray-50: 249 250 251;
+  --color-gray-200: 229 231 235;
+  --color-gray-300: 209 213 219;
+  --color-gray-700: 55 65 81;
+  --color-gray-900: 17 24 39;
+
+  /* Status */
+  --color-success-50: 240 253 244;
+  --color-success-700: 21 128 61;
+
+  --color-warning-50: 255 251 235;
+  --color-warning-700: 180 83 9;
+
+  --color-danger-50: 254 242 242;
+  --color-danger-600: 220 38 38;
+  --color-danger-700: 185 28 28;
+
+  /* Fonts */
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* -------------------------------
+   Base styles (v4 replacement)
+-------------------------------- */
+body {
+  background-color: rgb(var(--color-gray-50));
+  color: rgb(var(--color-gray-900));
+  font-family: var(--font-sans);
+}
+
+input,
+select,
+textarea {
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgb(var(--color-primary-500));
+}
+
+/* -------------------------------
+   Components (plain CSS, v4-safe)
+-------------------------------- */
+.btn-primary {
+  background-color: rgb(var(--color-primary-600));
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: rgb(var(--color-primary-700));
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: rgb(var(--color-gray-700));
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(var(--color-gray-300));
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: rgb(var(--color-gray-50));
+}
+
+.btn-danger {
+  background-color: rgb(var(--color-danger-600));
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: rgb(var(--color-danger-700));
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(var(--color-gray-200));
+  padding: 1.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(var(--color-gray-300));
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: rgb(var(--color-gray-700));
+}
+
+/* -------------------------------
+   Badges
+-------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: rgb(var(--color-success-50));
+  color: rgb(var(--color-success-700));
+}
+
+.badge-warning {
+  background-color: rgb(var(--color-warning-50));
+  color: rgb(var(--color-warning-700));
+}
+
+.badge-danger {
+  background-color: rgb(var(--color-danger-50));
+  color: rgb(var(--color-danger-700));
+}
+
+.badge-info {
+  background-color: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
+}

@@ -1,6 +1,7 @@
 const { Op, where } = require("sequelize");
 const { User, Category, Budget, Transaction } = require("../models/index");
 const BalanceService = require("../services/balanceService");
+const NotificationService = require('../services/notificationService');
 
 class UserController {
   static async getFinancialSummary(req, res, next) {
@@ -290,7 +291,7 @@ class UserController {
           budget: budget || null,
           recentTransactions: transactions,
           categorySpending: categorySpending,
-          alerts: await this.checkBudgetAlerts(userId) // You'll need to implement this
+          alerts: await NotificationService.checkBudgetAlerts(userId) // You'll need to implement this
         }
       });
     } catch (error) {

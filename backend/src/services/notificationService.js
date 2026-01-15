@@ -1,5 +1,7 @@
 const EmailService = require('./emailService');
 const { User, Category, Budget, Transaction } = require('../models/index');
+const {Op} = require('sequelize');
+const {sequelize} = require("../config/db");
 
 class NotificationService {
   static async checkBudgetAlerts(userId) {
