@@ -32,6 +32,12 @@ const Transactions = () => {
     pages: 1,
   });
 
+  const [stats, setStats] = useState({
+    totalIncome: 0,
+    totalExpenses: 0,
+    netBalance: 0
+  });
+
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
@@ -51,6 +57,21 @@ const Transactions = () => {
       if (response.data.success) {
         setTransactions(response.data.data.transactions);
         setPagination(response.data.data.pagination);
+        
+        // Calculate stats from transactions
+        const income = response.data.data.transactions
+          .filter(t => t.type === 'income')
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        const expenses = response.data.data.transactions
+          .filter(t => t.type === 'expense')
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        setStats({
+          totalIncome: income,
+          totalExpenses: expenses,
+          netBalance: income - expenses
+        });
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -292,33 +313,43 @@ const Transactions = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-600">Total Income</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">$2,450.00</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                ${stats.totalIncome.toFixed(2)}
+              </p>
             </div>
             <FiTrendingUp className="h-8 w-8 text-green-600" />
           </div>
-          <p className="text-sm text-green-600 mt-2">+12.5% from last month</p>
+          <p className="text-sm text-green-600 mt-2">+0.0% from last month</p>
         </div>
 
         <div className="bg-red-50 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-red-600">Total Expenses</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">$1,850.00</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                ${stats.totalExpenses.toFixed(2)}
+              </p>
             </div>
             <FiTrendingDown className="h-8 w-8 text-red-600" />
           </div>
-          <p className="text-sm text-red-600 mt-2">-5.3% from last month</p>
+          <p className="text-sm text-red-600 mt-2">-0.0% from last month</p>
         </div>
 
         <div className="bg-blue-50 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-blue-600">Net Balance</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">$600.00</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                ${stats.netBalance.toFixed(2)}
+              </p>
             </div>
             <FiTrendingUp className="h-8 w-8 text-blue-600" />
           </div>
-          <p className="text-sm text-blue-600 mt-2">Positive cash flow</p>
+          <p className={`text-sm mt-2 ${
+            stats.netBalance >= 0 ? 'text-blue-600' : 'text-red-600'
+          }`}>
+            {stats.netBalance >= 0 ? 'Positive cash flow' : 'Negative cash flow'}
+          </p>
         </div>
       </div>
 
@@ -334,7 +365,6 @@ const Transactions = () => {
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-12">
-            <div className="mx-auto h-12 w-12 text-gray-400">💰</div>
             <h3 className="mt-4 text-lg font-medium text-gray-900">No transactions found</h3>
             <p className="mt-2 text-gray-500">Try adjusting your filters or add a new transaction.</p>
             <div className="mt-6">

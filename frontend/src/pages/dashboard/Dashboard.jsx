@@ -57,7 +57,7 @@ const Dashboard = () => {
       value: `$${dashboardData?.overview?.currentBalance?.toFixed(2) || '0.00'}`,
       icon: FiDollarSign,
       trend: dashboardData?.overview?.currentBalance > 0 ? 'up' : 'down',
-      change: '+12.5%',
+      change: dashboardData?.overview?.currentBalance > 0 ? '+0.0%' : '0.0%',
       color: 'bg-blue-50',
       iconColor: 'text-blue-600',
     },
@@ -65,8 +65,8 @@ const Dashboard = () => {
       title: 'Total Income',
       value: `$${dashboardData?.overview?.totalIncome?.toFixed(2) || '0.00'}`,
       icon: FiTrendingUp,
-      trend: 'up',
-      change: '+8.2%',
+      trend: dashboardData?.overview?.totalIncome > 0 ? 'up' : 'down',
+      change: dashboardData?.overview?.totalIncome > 0 ? '+0.0%' : '0.0%',
       color: 'bg-green-50',
       iconColor: 'text-green-600',
     },
@@ -74,8 +74,8 @@ const Dashboard = () => {
       title: 'Total Expenses',
       value: `$${dashboardData?.overview?.totalExpenses?.toFixed(2) || '0.00'}`,
       icon: FiTrendingDown,
-      trend: 'down',
-      change: '-5.3%',
+      trend: dashboardData?.overview?.totalExpenses > 0 ? 'down' : 'up',
+      change: dashboardData?.overview?.totalExpenses > 0 ? '-0.0%' : '0.0%',
       color: 'bg-red-50',
       iconColor: 'text-red-600',
     },
@@ -84,7 +84,7 @@ const Dashboard = () => {
       value: `${dashboardData?.overview?.savingsProgress?.progress?.toFixed(1) || '0'}%`,
       icon: FiTarget,
       trend: dashboardData?.overview?.savingsProgress?.progress > 50 ? 'up' : 'down',
-      change: 'On Track',
+      change: 'Set Target',
       color: 'bg-purple-50',
       iconColor: 'text-purple-600',
     },
@@ -98,14 +98,13 @@ const Dashboard = () => {
       }))
     : [];
 
-  const monthlySpendingData = [
-    { month: 'Jan', income: 4000, expenses: 2400 },
-    { month: 'Feb', income: 3000, expenses: 1398 },
-    { month: 'Mar', income: 2000, expenses: 9800 },
-    { month: 'Apr', income: 2780, expenses: 3908 },
-    { month: 'May', income: 1890, expenses: 4800 },
-    { month: 'Jun', income: 2390, expenses: 3800 },
-  ];
+  // Create empty monthly data - all zeros
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthlySpendingData = monthNames.slice(0, 6).map(month => ({
+    month,
+    income: 0,
+    expenses: 0,
+  }));
 
   return (
     <div className="space-y-6">

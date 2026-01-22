@@ -46,6 +46,10 @@ import Reports from "./pages/analytics/Reports";
 // Settings Pages
 import AccountSettings from "./pages/settings/AccountSettings";
 import NotificationSettings from "./pages/settings/NotificationSettings";
+import PrivacySecurity from "./pages/settings/PrivacySecurity";
+import Preferences from "./pages/settings/Preferences";
+import EmailSettings from "./pages/settings/EmailSettings";
+import PasswordSettings from "./pages/settings/PasswordSettings";
 
 function App() {
   return (
@@ -130,6 +134,10 @@ function App() {
               <Route index element={<Settings />} />
               <Route path="account" element={<AccountSettings />} />
               <Route path="notifications" element={<NotificationSettings />} />
+              <Route path="privacy" element={<PrivacySecurity />} />
+              <Route path="preferences" element={<Preferences />} />
+              <Route path="email" element={<EmailSettings />} />
+              <Route path="password" element={<PasswordSettings />} />
             </Route>
           </Route>
 

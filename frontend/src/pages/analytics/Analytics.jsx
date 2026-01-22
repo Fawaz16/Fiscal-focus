@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { useBalance } from '../../context/BalanceContext';
 
 const Analytics = () => {
@@ -68,7 +68,7 @@ const Analytics = () => {
 
   const handleQuickRange = (days) => {
     const endDate = new Date();
-    const startDate = subMonths(endDate, days / 30);
+    const startDate = subDays(endDate, days);
     setDateRange({
       startDate: format(startDate, 'yyyy-MM-dd'),
       endDate: format(endDate, 'yyyy-MM-dd'),
@@ -87,15 +87,26 @@ const Analytics = () => {
     );
   }
 
-  // Sample data for charts
-  const monthlyData = [
-    { month: 'Jan', income: 4000, expenses: 2400 },
-    { month: 'Feb', income: 3000, expenses: 1398 },
-    { month: 'Mar', income: 2000, expenses: 9800 },
-    { month: 'Apr', income: 2780, expenses: 3908 },
-    { month: 'May', income: 1890, expenses: 4800 },
-    { month: 'Jun', income: 2390, expenses: 3800 },
-  ];
+  // Generate empty or actual monthly data
+  const getMonthlyData = () => {
+    if (summary?.dailyData?.length > 0) {
+      // Group daily data by month if available
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return monthNames.slice(0, 6).map((month, index) => ({
+        month,
+        income: 0,
+        expenses: 0
+      }));
+    }
+    
+    // Empty data for new users
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    return monthNames.map(month => ({
+      month,
+      income: 0,
+      expenses: 0,
+    }));
+  };
 
   const categoryData = breakdown?.breakdown 
     ? Object.entries(breakdown.breakdown).map(([name, data]) => ({
@@ -105,13 +116,28 @@ const Analytics = () => {
       }))
     : [];
 
-  const forecastData = [
-    { day: 'Today', projected: 800 },
-    { day: 'Day 7', projected: 1000 },
-    { day: 'Day 14', projected: 1200 },
-    { day: 'Day 21', projected: 1400 },
-    { day: 'Day 30', projected: 1600 },
-  ];
+  // Generate forecast data
+  const getForecastData = () => {
+    if (!forecast) {
+      const days = ['Today', 'Day 7', 'Day 14', 'Day 21', 'Day 30'];
+      return days.map(day => ({
+        day,
+        projected: 0
+      }));
+    }
+    
+    // Actual forecast data
+    const days = ['Today', 'Day 7', 'Day 14', 'Day 21', 'Day 30'];
+    const increment = (forecast.projectedBalance - forecast.currentBalance) / 4;
+    
+    return days.map((day, index) => ({
+      day,
+      projected: forecast.currentBalance + (increment * index)
+    }));
+  };
+
+  const monthlyData = getMonthlyData();
+  const forecastData = getForecastData();
 
   return (
     <div className="space-y-6">
@@ -194,12 +220,12 @@ const Analytics = () => {
               <div>
                 <p className="text-sm font-medium text-blue-600">Total Income</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
-                  ${summary.income.toFixed(2)}
+                  ${summary.income?.toFixed(2) || '0.00'}
                 </p>
               </div>
               <FiTrendingUp className="h-8 w-8 text-blue-600" />
             </div>
-            <p className="text-sm text-blue-600 mt-2">+12.5% from last period</p>
+            <p className="text-sm text-blue-600 mt-2">+0.0% from last period</p>
           </div>
 
           <div className="bg-red-50 rounded-xl p-6">
@@ -207,12 +233,12 @@ const Analytics = () => {
               <div>
                 <p className="text-sm font-medium text-red-600">Total Expenses</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
-                  ${summary.expenses.toFixed(2)}
+                  ${summary.expenses?.toFixed(2) || '0.00'}
                 </p>
               </div>
               <FiTrendingDown className="h-8 w-8 text-red-600" />
             </div>
-            <p className="text-sm text-red-600 mt-2">-5.3% from last period</p>
+            <p className="text-sm text-red-600 mt-2">-0.0% from last period</p>
           </div>
 
           <div className="bg-green-50 rounded-xl p-6">
@@ -220,7 +246,7 @@ const Analytics = () => {
               <div>
                 <p className="text-sm font-medium text-green-600">Net Balance</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
-                  ${summary.net.toFixed(2)}
+                  ${summary.net?.toFixed(2) || '0.00'}
                 </p>
               </div>
               <FiTrendingUp className="h-8 w-8 text-green-600" />
@@ -268,25 +294,31 @@ const Analytics = () => {
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Spending by Category</h3>
           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500">
+                No category data available
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -334,13 +366,13 @@ const Analytics = () => {
               <div>
                 <p className="text-sm text-gray-600">Current Balance</p>
                 <p className="text-xl font-bold text-gray-900">
-                  ${forecast.currentBalance?.toFixed(2)}
+                  ${forecast.currentBalance?.toFixed(2) || '0.00'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Projected in 30 days</p>
                 <p className="text-xl font-bold text-green-600">
-                  ${forecast.projectedBalance?.toFixed(2)}
+                  ${forecast.projectedBalance?.toFixed(2) || '0.00'}
                 </p>
               </div>
             </div>
@@ -358,20 +390,22 @@ const Analytics = () => {
               {categoryData[0]?.name || 'No data'} - ${categoryData[0]?.value?.toFixed(2) || '0.00'}
             </p>
             <p className="text-sm text-blue-600 mt-2">
-              Consider reviewing expenses in this category
+              {categoryData.length > 0 ? 'Consider reviewing expenses in this category' : 'Add transactions to see insights'}
             </p>
           </div>
           <div className="bg-green-50 rounded-lg p-4">
             <h4 className="font-medium text-green-900 mb-2">Savings Rate</h4>
             <p className="text-green-700">
-              {summary?.net && summary?.income 
+              {summary?.net && summary?.income && summary.income > 0
                 ? ((summary.net / summary.income) * 100).toFixed(1) 
                 : '0'}%
             </p>
             <p className="text-sm text-green-600 mt-2">
-              {((summary?.net || 0) / (summary?.income || 1)) * 100 > 20 
-                ? 'Excellent savings rate!' 
-                : 'Consider increasing your savings rate'}
+              {summary?.net && summary?.income && summary.income > 0 
+                ? (((summary.net / summary.income) * 100) > 20 
+                  ? 'Excellent savings rate!' 
+                  : 'Consider increasing your savings rate')
+                : 'Add income data to calculate savings rate'}
             </p>
           </div>
         </div>
