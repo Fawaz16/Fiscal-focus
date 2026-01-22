@@ -1,6 +1,633 @@
 <!DOCTYPE html>
 <html lang="en">
-
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to Fiscal Focus</title>
+        <style>
+            /* Reset and Base Styles */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+    
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                color: #334155;
+                line-height: 1.6;
+                padding: 20px;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+    
+            .container {
+                max-width: 680px;
+                width: 100%;
+                margin: 0 auto;
+            }
+    
+            /* Typography */
+            .gradient-text {
+                background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+    
+            h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+            }
+    
+            h2 {
+                font-size: 1.875rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: #1e293b;
+            }
+    
+            h3 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: #1e293b;
+            }
+    
+            h4 {
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                color: #1e293b;
+            }
+    
+            p {
+                margin-bottom: 1rem;
+                color: #64748b;
+            }
+    
+            .text-center {
+                text-align: center;
+            }
+    
+            .text-sm {
+                font-size: 0.875rem;
+            }
+    
+            /* Header */
+            .header {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+    
+            .logo-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+            }
+    
+            .icon-circle {
+                width: 48px;
+                height: 48px;
+                background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                margin-right: 16px;
+            }
+    
+            .icon-circle svg {
+                width: 24px;
+                height: 24px;
+                fill: white;
+            }
+    
+            .tagline {
+                font-weight: 500;
+                color: #64748b;
+                margin-bottom: 2rem;
+            }
+    
+            /* Main Card */
+            .main-card {
+                background: linear-gradient(145deg, #ffffff, #f8fafc);
+                border-radius: 20px;
+                padding: 2.5rem;
+                margin-bottom: 2.5rem;
+                box-shadow: 8px 8px 16px #e2e8f0, -8px -8px 16px #ffffff;
+            }
+    
+            /* Profile Section */
+            .profile-section {
+                margin-bottom: 2.5rem;
+            }
+    
+            .profile-header {
+                display: flex;
+                align-items: flex-start;
+                margin-bottom: 1.5rem;
+            }
+    
+            .profile-icon {
+                background-color: #dbeafe;
+                padding: 1rem;
+                border-radius: 12px;
+                margin-right: 1rem;
+                flex-shrink: 0;
+            }
+    
+            .profile-icon svg {
+                width: 20px;
+                height: 20px;
+                fill: #3b82f6;
+            }
+    
+            .profile-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 0.75rem;
+                margin: 1.5rem 0;
+            }
+    
+            .profile-item {
+                display: flex;
+                align-items: center;
+                background-color: #eff6ff;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+            }
+    
+            .profile-item svg {
+                width: 16px;
+                height: 16px;
+                fill: #3b82f6;
+                margin-right: 0.75rem;
+            }
+    
+            /* Divider */
+            .divider {
+                height: 1px;
+                background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+                margin: 1.5rem 0;
+            }
+    
+            /* Steps Section */
+            .steps-section {
+                margin-bottom: 2.5rem;
+            }
+    
+            .section-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 1.5rem;
+            }
+    
+            .section-header svg {
+                width: 20px;
+                height: 20px;
+                fill: #3b82f6;
+                margin-right: 0.75rem;
+            }
+    
+            .steps-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+    
+            .step-card {
+                background: white;
+                padding: 1.25rem;
+                border-radius: 12px;
+                border-left: 4px solid transparent;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+    
+            .step-card:hover {
+                transform: translateY(-4px);
+                border-left-color: #3b82f6;
+                box-shadow: 0 10px 25px rgba(59, 130, 246, 0.1);
+            }
+    
+            .step-content {
+                display: flex;
+                align-items: flex-start;
+            }
+    
+            .step-number {
+                font-family: 'Courier New', monospace;
+                font-weight: 600;
+                color: #1e293b;
+                background: #e0f2fe;
+                border-radius: 6px;
+                padding: 0.25rem 0.5rem;
+                margin-right: 0.75rem;
+                flex-shrink: 0;
+            }
+    
+            /* Features Section */
+            .features-section {
+                margin-bottom: 2.5rem;
+            }
+    
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 1rem;
+                margin-top: 1.5rem;
+            }
+    
+            .feature-card {
+                text-align: center;
+                padding: 1.5rem;
+                border-radius: 12px;
+                background: linear-gradient(to bottom, #f0f9ff, white);
+            }
+    
+            .feature-card:nth-child(2) {
+                background: linear-gradient(to bottom, #faf5ff, white);
+            }
+    
+            .feature-card:nth-child(3) {
+                background: linear-gradient(to bottom, #ecfeff, white);
+            }
+    
+            .feature-icon {
+                width: 56px;
+                height: 56px;
+                background-color: #dbeafe;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1rem;
+            }
+    
+            .feature-card:nth-child(2) .feature-icon {
+                background-color: #f3e8ff;
+            }
+    
+            .feature-card:nth-child(3) .feature-icon {
+                background-color: #cffafe;
+            }
+    
+            .feature-icon svg {
+                width: 24px;
+                height: 24px;
+                fill: #3b82f6;
+            }
+    
+            .feature-card:nth-child(2) .feature-icon svg {
+                fill: #8b5cf6;
+            }
+    
+            .feature-card:nth-child(3) .feature-icon svg {
+                fill: #06b6d4;
+            }
+    
+            /* CTA Button */
+            .cta-section {
+                text-align: center;
+                padding-top: 1.5rem;
+            }
+    
+            .btn-primary {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                font-weight: 600;
+                padding: 1rem 2rem;
+                border-radius: 10px;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+                position: relative;
+                overflow: hidden;
+                margin-bottom: 1rem;
+            }
+    
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            }
+    
+            .btn-primary svg {
+                width: 16px;
+                height: 16px;
+                fill: white;
+                margin-left: 0.5rem;
+                transition: transform 0.3s ease;
+            }
+    
+            .btn-primary:hover svg {
+                transform: translateX(4px);
+            }
+    
+            /* Footer */
+            .footer {
+                text-align: center;
+                color: #64748b;
+            }
+    
+            .support-box {
+                border: 1px solid;
+                border-image: linear-gradient(90deg, #3b82f6, #8b5cf6) 1;
+                padding: 1.5rem;
+                border-radius: 12px;
+                margin-bottom: 1.5rem;
+            }
+    
+            .support-link {
+                color: #3b82f6;
+                text-decoration: none;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                margin-top: 0.5rem;
+            }
+    
+            .support-link:hover {
+                color: #1d4ed8;
+            }
+    
+            .support-link svg {
+                width: 16px;
+                height: 16px;
+                fill: currentColor;
+                margin-right: 0.5rem;
+            }
+    
+            .footer-note {
+                font-size: 0.75rem;
+                color: #94a3b8;
+                max-width: 500px;
+                margin: 0 auto;
+                line-height: 1.5;
+            }
+    
+            .highlight {
+                color: #3b82f6;
+                font-weight: 600;
+            }
+    
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .container {
+                    padding: 0 10px;
+                }
+                
+                .main-card {
+                    padding: 1.5rem;
+                }
+                
+                h1 {
+                    font-size: 2rem;
+                }
+                
+                h2 {
+                    font-size: 1.5rem;
+                }
+                
+                h3 {
+                    font-size: 1.25rem;
+                }
+                
+                .profile-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .features-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .profile-header {
+                    flex-direction: column;
+                }
+                
+                .profile-icon {
+                    margin-bottom: 1rem;
+                }
+            }
+    
+            @media (max-width: 480px) {
+                body {
+                    padding: 10px;
+                }
+                
+                .main-card {
+                    padding: 1rem;
+                }
+                
+                .btn-primary {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                        </svg>
+                    </div>
+                    <h1 class="gradient-text">Fiscal Focus</h1>
+                </div>
+                <p class="tagline">Your personal financial compass</p>
+                
+                <div>
+                    <h2>Welcome aboard, <span class="highlight"><%= user.name %></span>!</h2>
+                    <p>We're thrilled to help you navigate your financial journey with clarity and confidence.</p>
+                </div>
+            </div>
+    
+            <!-- Main Card -->
+            <div class="main-card">
+                <!-- Profile Section -->
+                <div class="profile-section">
+                    <div class="profile-header">
+                        <div class="profile-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Complete Your Profile</h3>
+                            <p>Just a few quick steps to personalize your experience:</p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                <circle cx="18" cy="8" r="3"/>
+                            </svg>
+                            <span>Add profile photo</span>
+                        </div>
+                        <div class="profile-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/>
+                                <path fill="none" d="M0 0h24v24H0z"/>
+                            </svg>
+                            <span>Set birth date</span>
+                        </div>
+                        <div class="profile-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                            </svg>
+                            <span>Add phone number</span>
+                        </div>
+                        <div class="profile-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                            </svg>
+                            <span>Privacy settings</span>
+                        </div>
+                    </div>
+                    
+                    <div class="divider"></div>
+                </div>
+    
+                <!-- Steps Section -->
+                <div class="steps-section">
+                    <div class="section-header">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                        </svg>
+                        <h3>Let's Get Started</h3>
+                    </div>
+                    
+                    <div class="steps-container">
+                        <div class="step-card">
+                            <div class="step-content">
+                                <span class="step-number">01</span>
+                                <div>
+                                    <h4>Set Your Monthly Budget</h4>
+                                    <p class="text-sm">Define your spending limits in the Dashboard</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-content">
+                                <span class="step-number">02</span>
+                                <div>
+                                    <h4>Create Spending Categories</h4>
+                                    <p class="text-sm">Tailor categories to match your lifestyle</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-content">
+                                <span class="step-number">03</span>
+                                <div>
+                                    <h4>Log Your First Transaction</h4>
+                                    <p class="text-sm">Takes just 30 seconds to get started</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-content">
+                                <span class="step-number">04</span>
+                                <div>
+                                    <h4>Check Your Insights</h4>
+                                    <p class="text-sm">Review patterns and stay on track</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Features Section -->
+                <div class="features-section">
+                    <h3 class="text-center">Why You'll Love It</h3>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/>
+                                </svg>
+                            </div>
+                            <h4>Always With You</h4>
+                            <p class="text-sm">Track expenses anywhere, anytime</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+                                </svg>
+                            </div>
+                            <h4>Smart Notifications</h4>
+                            <p class="text-sm">Alerts to keep spending in check</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                                </svg>
+                            </div>
+                            <h4>Visual Insights</h4>
+                            <p class="text-sm">Clear understanding of your finances</p>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- CTA Section -->
+                <div class="cta-section">
+                    <a href="<%= process.env.FRONTEND_PROD_URL %>/dashboard" class="btn-primary">
+                        <span>Launch Your Dashboard</span>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                        </svg>
+                    </a>
+                    <p class="text-sm">Your financial journey starts with a single click</p>
+                </div>
+            </div>
+    
+            <!-- Footer -->
+            <div class="footer">
+                <div class="support-box">
+                    <p class="text-sm">Need assistance?</p>
+                    <a href="mailto:support@fiscalfocus.com" class="support-link">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        support@fiscalfocus.com
+                    </a>
+                </div>
+                
+                <p class="text-sm">© <span class="highlight"><%= year %></span> Fiscal Focus. All rights reserved.</p>
+                
+                <p class="footer-note">
+                    You're receiving this email because you signed up for Fiscal Focus. If this wasn't you, please disregard this message.
+                    <br><br>
+                    <span class="highlight">Empowering financial decisions since <%= year %></span>
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
