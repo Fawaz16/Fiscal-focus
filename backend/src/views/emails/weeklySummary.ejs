@@ -1,188 +1,755 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weekly Financial Summary</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-gray-50 font-sans">
-  <div class="max-w-3xl mx-auto p-6">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl p-8 text-center text-white">
-      <div class="inline-block p-4 bg-white/20 rounded-full mb-4">
-        <span class="text-3xl">📊</span>
-      </div>
-      <h1 class="text-3xl font-bold mb-2">Weekly Financial Summary</h1>
-      <p class="text-blue-100">Your financial overview for the past week</p>
-      <p class="text-sm text-blue-200 mt-2">
-        <%= summary.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %> 
-        - <%= summary.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
-      </p>
-    </div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Financial Summary</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <!-- Main Content -->
-    <div class="bg-white rounded-b-2xl shadow-xl p-8">
-      <!-- Welcome -->
-      <div class="mb-8 text-center">
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Hello <%= user.name %>,</h2>
-        <p class="text-gray-600">
-          Here's your financial summary for the past week. Let's see how you did!
-        </p>
-      </div>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
 
-      <!-- Quick Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div class="bg-green-50 p-6 rounded-xl border border-green-200">
-          <div class="text-green-600 font-bold text-3xl mb-2">$<%= summary.income.toFixed(2) %></div>
-          <div class="text-green-700 font-semibold">Income</div>
-          <div class="text-green-600 text-sm mt-1">💰 Money coming in</div>
-        </div>
-        
-        <div class="bg-red-50 p-6 rounded-xl border border-red-200">
-          <div class="text-red-600 font-bold text-3xl mb-2">$<%= summary.expenses.toFixed(2) %></div>
-          <div class="text-red-700 font-semibold">Expenses</div>
-          <div class="text-red-600 text-sm mt-1">📉 Money going out</div>
-        </div>
-        
-        <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
-          <div class="text-blue-600 font-bold text-3xl mb-2">$<%= summary.net.toFixed(2) %></div>
-          <div class="text-blue-700 font-semibold">Net Balance</div>
-          <div class="text-blue-600 text-sm mt-1">
-            <%= summary.net >= 0 ? '✅ Surplus' : '⚠️ Deficit' %>
-          </div>
-        </div>
-      </div>
+        /* Container */
+        .container {
+            max-width: 768px;
+            margin: 0 auto;
+            width: 100%;
+        }
 
-      <!-- Category Breakdown -->
-      <div class="mb-10">
-        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-          <span class="mr-2">📈</span> Spending by Category
-        </h3>
-        
-        <% if (Object.keys(summary.categories).length > 0) { %>
-          <div class="space-y-4">
-            <% Object.entries(summary.categories).forEach(([category, amount]) => { %>
-              <div class="flex items-center">
-                <div class="w-1/4">
-                  <span class="font-medium text-gray-700"><%= category %></span>
-                </div>
-                <div class="w-2/3">
-                  <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-gradient-to-r from-blue-400 to-purple-500 h-3 rounded-full" 
-                         style=""><%= (amount / summary.expenses * 100) %></div>
-                  </div>
-                </div>
-                <div class="w-1/12 text-right">
-                  <span class="font-bold text-gray-800">$<%= amount.toFixed(2) %></span>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        <% } else { %>
-          <div class="text-center py-8 bg-gray-50 rounded-xl">
-            <span class="text-4xl mb-4 block">📭</span>
-            <p class="text-gray-500">No expenses recorded this week</p>
-          </div>
-        <% } %>
-      </div>
+        /* Header */
+        .header {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            border-radius: 20px 20px 0 0;
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
 
-      <!-- Weekly Insights -->
-      <div class="mb-10">
-        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-          <span class="mr-2">💡</span> Weekly Insights
-        </h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-indigo-50 p-6 rounded-xl">
-            <div class="flex items-center mb-3">
-              <span class="text-2xl mr-3">💳</span>
-              <h4 class="font-semibold text-indigo-700">Transaction Count</h4>
-            </div>
-            <p class="text-3xl font-bold text-indigo-800 mb-2"><%= summary.transactionCount %></p>
-            <p class="text-sm text-indigo-600">transactions this week</p>
-          </div>
-          
-          <div class="bg-teal-50 p-6 rounded-xl">
-            <div class="flex items-center mb-3">
-              <span class="text-2xl mr-3">📅</span>
-              <h4 class="font-semibold text-teal-700">Daily Average</h4>
-            </div>
-            <p class="text-3xl font-bold text-teal-800 mb-2">$<%= summary.averageDailySpending.toFixed(2) %></p>
-            <p class="text-sm text-teal-600">spent per day on average</p>
-          </div>
-        </div>
-      </div>
+        .header-icon {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
 
-      <!-- Tips & Recommendations -->
-      <div class="mb-10">
-        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-          <span class="mr-2">🎯</span> Tips for Next Week
-        </h3>
-        
-        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <% const tips = [
-              { icon: '💰', text: 'Try to reduce dining out expenses by 10%' },
-              { icon: '📱', text: 'Use the mobile app for quick expense tracking' },
-              { icon: '🎯', text: 'Set specific goals for next week\'s spending' }
-            ]; %>
+        .header-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: #dbeafe;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .header-date {
+            color: #93c5fd;
+            font-size: 0.875rem;
+            margin-top: 8px;
+        }
+
+        /* Main Content */
+        .content {
+            background-color: #ffffff;
+            border-radius: 0 0 20px 20px;
+            padding: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Welcome Section */
+        .welcome {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .welcome h2 span {
+            color: #3b82f6;
+        }
+
+        .welcome p {
+            color: #6b7280;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid;
+        }
+
+        .stat-income {
+            background-color: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .stat-expenses {
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+        }
+
+        .stat-net {
+            background-color: #eff6ff;
+            border-color: #93c5fd;
+        }
+
+        .stat-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-income .stat-amount {
+            color: #059669;
+        }
+
+        .stat-expenses .stat-amount {
+            color: #dc2626;
+        }
+
+        .stat-net .stat-amount {
+            color: #2563eb;
+        }
+
+        .stat-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-income .stat-title {
+            color: #065f46;
+        }
+
+        .stat-expenses .stat-title {
+            color: #991b1b;
+        }
+
+        .stat-net .stat-title {
+            color: #1e40af;
+        }
+
+        .stat-title svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stat-income .stat-title svg {
+            fill: #059669;
+        }
+
+        .stat-expenses .stat-title svg {
+            fill: #dc2626;
+        }
+
+        .stat-net .stat-title svg {
+            fill: #2563eb;
+        }
+
+        .stat-note {
+            font-size: 0.875rem;
+            margin-top: 4px;
+            color: #6b7280;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        .section-header svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            fill: #3b82f6;
+        }
+
+        /* Category Breakdown */
+        .category-breakdown {
+            margin-bottom: 40px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            background-color: #f9fafb;
+            border-radius: 12px;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            fill: #9ca3af;
+            margin-bottom: 16px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .empty-text {
+            color: #6b7280;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .category-name {
+            width: 25%;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .category-bar {
+            width: 60%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 12px;
+            margin: 0 16px;
+            overflow: hidden;
+        }
+
+        .category-fill {
+            height: 100%;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            border-radius: 9999px;
+        }
+
+        .category-amount {
+            width: 15%;
+            text-align: right;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        /* Insights Grid */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .insight-card {
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        .insight-transactions {
+            background-color: #eef2ff;
+        }
+
+        .insight-average {
+            background-color: #f0fdfa;
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .insight-header svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+        }
+
+        .insight-transactions .insight-header svg {
+            fill: #4f46e5;
+        }
+
+        .insight-average .insight-header svg {
+            fill: #0d9488;
+        }
+
+        .insight-header h4 {
+            font-weight: 600;
+        }
+
+        .insight-transactions .insight-header h4 {
+            color: #3730a3;
+        }
+
+        .insight-average .insight-header h4 {
+            color: #0f766e;
+        }
+
+        .insight-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .insight-transactions .insight-value {
+            color: #4f46e5;
+        }
+
+        .insight-average .insight-value {
+            color: #0d9488;
+        }
+
+        .insight-note {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            margin-bottom: 40px;
+        }
+
+        .tips-container {
+            background: linear-gradient(to right, #fffbeb, #fef3c7);
+            border: 1px solid #fbbf24;
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .tip-item svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            flex-shrink: 0;
+            fill: #92400e;
+            margin-top: 2px;
+        }
+
+        .tip-text {
+            color: #92400e;
+        }
+
+        /* CTA Buttons */
+        .cta-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .cta-button svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .cta-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .cta-primary:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .cta-secondary {
+            background-color: #1f2937;
+            color: white;
+        }
+
+        .cta-secondary:hover {
+            background-color: #111827;
+            transform: translateY(-2px);
+        }
+
+        /* Fun Fact */
+        .fun-fact {
+            background: linear-gradient(to right, #f5f3ff, #fce7f3);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .fun-fact p {
+            color: #4b5563;
+            font-style: italic;
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 32px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .footer-link {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: #3b82f6;
+        }
+
+        .footer-copyright {
+            margin-top: 8px;
+        }
+
+        .footer-note {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
             
-            <% tips.forEach(tip => { %>
-              <div class="flex items-start">
-                <span class="text-2xl mr-3"><%= tip.icon %></span>
-                <p class="text-gray-700"><%= tip.text %></p>
-              </div>
-            <% }) %>
-          </div>
+            .header, .content {
+                padding: 24px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-button {
+                width: 100%;
+            }
+            
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .category-name {
+                width: 30%;
+            }
+            
+            .category-bar {
+                width: 50%;
+            }
+            
+            .category-amount {
+                width: 20%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header, .content {
+                padding: 20px;
+            }
+            
+            .welcome h2 {
+                font-size: 1.5rem;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .category-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .category-name,
+            .category-bar,
+            .category-amount {
+                width: 100%;
+                margin: 0;
+            }
+            
+            .category-amount {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+            </div>
+            <h1>Weekly Financial Summary</h1>
+            <p class="header-subtitle">Your financial overview for the past week</p>
+            <p class="header-date">
+                <%= summary.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %> 
+                - <%= summary.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+            </p>
         </div>
-      </div>
 
-      <!-- CTA Buttons -->
-      <div class="flex flex-col md:flex-row gap-4 justify-center mb-8">
-        <a href="<%= process.env.FRONTEND_DEV_URL %>/dashboard" 
-           class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 text-center">
-          View Full Dashboard
-        </a>
-        <a href="<%= process.env.FRONTEND_DEV_URL %>/transactions" 
-           class="inline-block bg-gray-800 hover:bg-black text-white font-semibold py-3 px-8 rounded-lg transition duration-300 text-center">
-          Review Transactions
-        </a>
-      </div>
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Welcome -->
+            <div class="welcome">
+                <h2>Hello <span><%= user.name %></span>,</h2>
+                <p>
+                    Here's your financial summary for the past week. Let's see how you did!
+                </p>
+            </div>
 
-      <!-- Fun Fact -->
-      <div class="text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-8">
-        <p class="text-gray-700 italic">
-          "Did you know? Saving just $5 per day adds up to $1,825 in a year!"
-        </p>
-      </div>
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card stat-income">
+                    <div class="stat-amount">$<%= summary.income.toFixed(2) %></div>
+                    <div class="stat-title">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Income
+                    </div>
+                    <div class="stat-note">Money coming in</div>
+                </div>
+                
+                <div class="stat-card stat-expenses">
+                    <div class="stat-amount">$<%= summary.expenses.toFixed(2) %></div>
+                    <div class="stat-title">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+                        </svg>
+                        Expenses
+                    </div>
+                    <div class="stat-note">Money going out</div>
+                </div>
+                
+                <div class="stat-card stat-net">
+                    <div class="stat-amount">$<%= summary.net.toFixed(2) %></div>
+                    <div class="stat-title">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Net Balance
+                    </div>
+                    <div class="stat-note">
+                        <%= summary.net >= 0 ? 'Surplus' : 'Deficit' %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="category-breakdown">
+                <div class="section-header">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    <h3>Spending by Category</h3>
+                </div>
+                
+                <% if (Object.keys(summary.categories).length > 0) { %>
+                    <% Object.entries(summary.categories).forEach(([category, amount]) => { 
+                        const percentage = summary.expenses > 0 ? (amount / summary.expenses * 100).toFixed(1) : 0;
+                    %>
+                        <div class="category-item">
+                            <div class="category-name"><%= category %></div>
+                            <div class="category-bar">
+                                <div class="category-fill" style="width: <%= percentage %>%;"></div>
+                            </div>
+                            <div class="category-amount">$<%= amount.toFixed(2) %></div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/>
+                        </svg>
+                        <p class="empty-text">No expenses recorded this week</p>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Weekly Insights -->
+            <div class="insights-section">
+                <div class="section-header">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    <h3>Weekly Insights</h3>
+                </div>
+                
+                <div class="insights-grid">
+                    <div class="insight-card insight-transactions">
+                        <div class="insight-header">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                            </svg>
+                            <h4>Transaction Count</h4>
+                        </div>
+                        <div class="insight-value"><%= summary.transactionCount %></div>
+                        <div class="insight-note">transactions this week</div>
+                    </div>
+                    
+                    <div class="insight-card insight-average">
+                        <div class="insight-header">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                            </svg>
+                            <h4>Daily Average</h4>
+                        </div>
+                        <div class="insight-value">$<%= summary.averageDailySpending.toFixed(2) %></div>
+                        <div class="insight-note">spent per day on average</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips & Recommendations -->
+            <div class="tips-section">
+                <div class="section-header">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    <h3>Tips for Next Week</h3>
+                </div>
+                
+                <div class="tips-container">
+                    <div class="tips-grid">
+                        <div class="tip-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                            </svg>
+                            <p class="tip-text">Try to reduce dining out expenses by 10%</p>
+                        </div>
+                        <div class="tip-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/>
+                            </svg>
+                            <p class="tip-text">Use the mobile app for quick expense tracking</p>
+                        </div>
+                        <div class="tip-item">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <p class="tip-text">Set specific goals for next week's spending</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="cta-buttons">
+                <a href="<%= process.env.FRONTEND_DEV_URL %>/dashboard" class="cta-button cta-primary">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                    </svg>
+                    View Full Dashboard
+                </a>
+                <a href="<%= process.env.FRONTEND_DEV_URL %>/transactions" class="cta-button cta-secondary">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                    </svg>
+                    Review Transactions
+                </a>
+            </div>
+
+            <!-- Fun Fact -->
+            <div class="fun-fact">
+                <p>"Did you know? Saving just $5 per day adds up to $1,825 in a year!"</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy Policy</a>
+                <a href="#" class="footer-link">Terms of Service</a>
+                <a href="<%= process.env.FRONTEND_DEV_URL %>/unsubscribe" class="footer-link">Unsubscribe</a>
+            </div>
+            <p>This is an automated weekly summary from Fiscal Focus.</p>
+            <p class="footer-copyright">© <%= year %> Fiscal Focus. Helping you take control of your finances.</p>
+            <p class="footer-note">
+                You're receiving this email because you subscribed to weekly summaries.
+            </p>
+        </div>
     </div>
-
-    <!-- Footer -->
-    <div class="text-center mt-8 text-gray-500 text-sm">
-      <div class="flex justify-center space-x-6 mb-4">
-        <a href="#" class="text-gray-400 hover:text-blue-600">Privacy Policy</a>
-        <a href="#" class="text-gray-400 hover:text-blue-600">Terms of Service</a>
-        <a href="<%= process.env.FRONTEND_DEV_URL %>/unsubscribe" class="text-gray-400 hover:text-blue-600">Unsubscribe</a>
-      </div>
-      <p>This is an automated weekly summary from Fiscal Focus.</p>
-      <p class="mt-1">© <%= year %> Fiscal Focus. Helping you take control of your finances.</p>
-      <p class="mt-2 text-xs text-gray-400">
-        You're receiving this email because you subscribed to weekly summaries.
-      </p>
-    </div>
-  </div>
-
-  <script>
-    // Simple chart for category breakdown (email-safe)
-    document.addEventListener('DOMContentLoaded', function() {
-      // Add small progress bars for each category
-      document.querySelectorAll('.progress-bar').forEach(bar => {
-        const width = bar.getAttribute('data-width');
-        bar.style.width = width + '%';
-      });
-    });
-  </script>
 </body>
 </html>

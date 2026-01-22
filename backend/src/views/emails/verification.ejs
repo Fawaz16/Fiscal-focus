@@ -1,85 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Your Email</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Container */
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Card */
+        .card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .icon-container {
+            display: inline-block;
+            background-color: #f0fdf4;
+            padding: 20px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+
+        .icon-container svg {
+            width: 40px;
+            height: 40px;
+            fill: #10b981;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* Content */
+        .content {
+            margin-bottom: 40px;
+        }
+
+        .greeting {
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+
+        .greeting strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .message {
+            color: #4b5563;
+            margin-bottom: 24px;
+        }
+
+        /* Button */
+        .verify-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #10b981;
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding: 16px 40px;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+        }
+
+        .verify-button:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .verify-button svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+
+        /* Link Box */
+        .link-note {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+
+        .link-box {
+            background-color: #f3f4f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            word-break: break-all;
+            position: relative;
+        }
+
+        .link-box code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #374151;
+            padding-right: 60px;
+            display: block;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .copy-btn:hover {
+            background: #cbd5e1;
+        }
+
+        .copy-btn svg {
+            width: 12px;
+            height: 12px;
+            fill: #374151;
+        }
+
+        .copy-message {
+            color: #059669;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .copy-message svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background-color: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .warning-content {
+            color: #92400e;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .warning-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: #d97706;
+            margin-right: 8px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Footer Section */
+        .card-footer {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 24px;
+        }
+
+        .help-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .email-note {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            margin-top: 8px;
+        }
+
+        /* Social Footer */
+        .social-footer {
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .social-icon {
+            color: #9ca3af;
+            transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-icon:hover {
+            color: #3b82f6;
+        }
+
+        .social-icon:nth-child(2):hover {
+            color: #60a5fa;
+        }
+
+        .social-icon:nth-child(3):hover {
+            color: #ef4444;
+        }
+
+        .social-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .copyright {
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            body {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 24px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .verify-button {
+                width: 100%;
+                padding: 14px 20px;
+            }
+            
+            .link-box code {
+                padding-right: 0;
+                margin-bottom: 12px;
+            }
+            
+            .copy-btn {
+                position: static;
+                margin-top: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px;
+            }
+            
+            .icon-container {
+                padding: 16px;
+            }
+            
+            .icon-container svg {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .social-icons {
+                gap: 12px;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
-  <div class="max-w-2xl mx-auto p-6">
-    <!-- Header -->
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-      <div class="text-center mb-8">
-        <div class="inline-block p-4 bg-green-50 rounded-full mb-4">
-          <span class="text-3xl text-green-600">✅</span>
+<body>
+    <div class="container">
+        <!-- Card -->
+        <div class="card">
+            <!-- Header -->
+            <div class="header">
+                <div class="icon-container">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                </div>
+                <h1>Verify Your Email Address</h1>
+                <p class="subtitle">One more step to complete your registration</p>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <p class="greeting">
+                    Hello <strong><%= user.name %></strong>,
+                </p>
+                
+                <p class="message">
+                    Thank you for signing up for Fiscal Focus! To complete your registration and start 
+                    managing your finances, please verify your email address by clicking the button below.
+                </p>
+
+                <!-- Button -->
+                <div class="button-container">
+                    <a href="<%= verificationUrl %>" class="verify-button">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                        </svg>
+                        Verify Email Address
+                    </a>
+                </div>
+
+                <!-- Link Alternative -->
+                <p class="link-note">
+                    If the button doesn't work, copy and paste this link into your browser:
+                </p>
+                <div class="link-box">
+                    <code><%= verificationUrl %></code>
+                    <button class="copy-btn" onclick="copyToClipboard('<%= verificationUrl %>')">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+                
+                <div id="copy-message" class="copy-message">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    Link copied to clipboard!
+                </div>
+
+                <!-- Warning -->
+                <div class="warning-box">
+                    <div class="warning-content">
+                        <div class="warning-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <strong>Important:</strong> This verification link will expire in 24 hours.
+                            If you didn't create an account with Fiscal Focus, please ignore this email.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer">
+                <p class="help-text">
+                    Need help? Contact our support team at support@fiscalfocus.com
+                </p>
+                <p class="email-note">
+                    This email was sent to <%= user.email %> because you signed up for Fiscal Focus.
+                </p>
+            </div>
         </div>
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Verify Your Email Address</h1>
-        <p class="text-gray-600">One more step to complete your registration</p>
-      </div>
 
-      <div class="mb-8">
-        <p class="text-gray-700 mb-4">
-          Hello <span class="font-semibold"><%= user.name %></span>,
-        </p>
-        <p class="text-gray-700 mb-6">
-          Thank you for signing up for Fiscal Focus! To complete your registration and start 
-          managing your finances, please verify your email address by clicking the button below.
-        </p>
-
-        <div class="text-center my-8">
-          <a href="<%= verificationUrl %>" 
-             class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-10 rounded-lg text-lg transition duration-300 shadow-md hover:shadow-lg">
-            Verify Email Address
-          </a>
+        <!-- Social Footer -->
+        <div class="social-footer">
+            <div class="social-icons">
+                <a href="#" class="social-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
+                    </svg>
+                </a>
+                <a href="#" class="social-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.213c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                    </svg>
+                </a>
+                <a href="#" class="social-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
+                    </svg>
+                </a>
+            </div>
+            <p class="copyright">© <%= year %> Fiscal Focus. All rights reserved.</p>
         </div>
-
-        <p class="text-gray-600 text-sm mb-2">
-          If the button doesn't work, copy and paste this link into your browser:
-        </p>
-        <div class="bg-gray-100 p-4 rounded-lg mb-6">
-          <code class="text-sm break-all"><%= verificationUrl %></code>
-        </div>
-
-        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-          <p class="text-yellow-800 text-sm">
-            ⚠️ <strong>Important:</strong> This verification link will expire in 24 hours.
-            If you didn't create an account with Fiscal Focus, please ignore this email.
-          </p>
-        </div>
-      </div>
-
-      <div class="border-t border-gray-200 pt-6">
-        <p class="text-gray-500 text-sm">
-          Need help? Contact our support team at support@fiscalfocus.com
-        </p>
-        <p class="text-gray-400 text-xs mt-2">
-          This email was sent to <%= user.email %> because you signed up for Fiscal Focus.
-        </p>
-      </div>
     </div>
 
-    <!-- Footer -->
-    <div class="text-center mt-8">
-      <div class="flex justify-center space-x-4 mb-4">
-        <a href="#" class="text-gray-400 hover:text-blue-600">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
-          </svg>
-        </a>
-        <a href="#" class="text-gray-400 hover:text-blue-400">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.213c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-          </svg>
-        </a>
-        <a href="#" class="text-gray-400 hover:text-red-500">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
-          </svg>
-        </a>
-      </div>
-      <p class="text-gray-500 text-sm">© <%= year %> Fiscal Focus. All rights reserved.</p>
-    </div>
-  </div>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const message = document.getElementById('copy-message');
+                message.style.display = 'block';
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
 </body>
 </html>

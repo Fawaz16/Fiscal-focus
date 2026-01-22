@@ -1,111 +1,520 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Budget Alert</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Alert</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Container */
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Alert Header */
+        .alert-header {
+            background: linear-gradient(to right, #f97316, #ef4444);
+            border-radius: 20px 20px 0 0;
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .alert-icon {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 16px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+
+        .alert-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+
+        .alert-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .alert-subtitle {
+            color: #fed7aa;
+            font-size: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            background-color: #ffffff;
+            border-radius: 0 0 20px 20px;
+            padding: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Greeting */
+        .greeting {
+            margin-bottom: 32px;
+        }
+
+        .greeting h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .greeting p {
+            color: #4b5563;
+        }
+
+        .greeting .highlight {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .greeting .category {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* Budget Progress */
+        .budget-progress {
+            margin-bottom: 32px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .category-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .percentage-used {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #dc2626;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #fb923c, #ef4444);
+            border-radius: 9999px;
+        }
+
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Alert Details */
+        .alert-details {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        .alert-details-content {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .alert-details-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: #dc2626;
+            margin-right: 12px;
+            margin-top: 2px;
+        }
+
+        .alert-details-text h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #991b1b;
+            margin-bottom: 8px;
+        }
+
+        .alert-details-text ul {
+            list-style-type: none;
+        }
+
+        .alert-details-text li {
+            font-size: 0.75rem;
+            color: #991b1b;
+            margin-bottom: 4px;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .alert-details-text li::before {
+            content: '•';
+            position: absolute;
+            left: 8px;
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        /* Action Steps */
+        .action-steps {
+            margin-bottom: 32px;
+        }
+
+        .action-steps h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-steps h3 svg {
+            width: 20px;
+            height: 20px;
+            fill: #3b82f6;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .action-card {
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .action-card:nth-child(1) {
+            background-color: #eff6ff;
+        }
+
+        .action-card:nth-child(2) {
+            background-color: #f0fdf4;
+        }
+
+        .action-card:nth-child(3) {
+            background-color: #faf5ff;
+        }
+
+        .action-card:nth-child(4) {
+            background-color: #fefce8;
+        }
+
+        .action-card h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .action-card:nth-child(1) h4 {
+            color: #1d4ed8;
+        }
+
+        .action-card:nth-child(2) h4 {
+            color: #059669;
+        }
+
+        .action-card:nth-child(3) h4 {
+            color: #7c3aed;
+        }
+
+        .action-card:nth-child(4) h4 {
+            color: #d97706;
+        }
+
+        .action-card p {
+            font-size: 0.75rem;
+            color: #4b5563;
+        }
+
+        /* CTA Button */
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #dc2626;
+            color: white;
+            font-weight: 600;
+            padding: 16px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.25);
+            margin-bottom: 32px;
+        }
+
+        .cta-button:hover {
+            background-color: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .cta-button svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+
+        /* Notification Settings */
+        .notification-settings {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 24px;
+        }
+
+        .notification-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notification-text svg {
+            width: 16px;
+            height: 16px;
+            fill: #6b7280;
+        }
+
+        .settings-link {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .settings-link a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .settings-link a:hover {
+            color: #1d4ed8;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 32px;
+        }
+
+        .footer p {
+            margin-bottom: 4px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .alert-header, .main-content {
+                padding: 24px;
+            }
+            
+            .alert-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-button {
+                width: 100%;
+                padding: 14px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .alert-header, .main-content {
+                padding: 20px;
+            }
+            
+            .alert-icon {
+                padding: 12px;
+            }
+            
+            .alert-icon svg {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .progress-header, .progress-details {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .alert-details-content {
+                flex-direction: column;
+            }
+            
+            .alert-details-icon svg {
+                margin-bottom: 8px;
+                margin-right: 0;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
-  <div class="max-w-2xl mx-auto p-6">
-    <!-- Alert Header -->
-    <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-t-2xl p-6 text-center text-white">
-      <div class="inline-block p-3 bg-white/20 rounded-full mb-4">
-        <span class="text-3xl">⚠️</span>
-      </div>
-      <h1 class="text-2xl font-bold mb-2">Budget Alert!</h1>
-      <p class="text-orange-100">You're approaching your spending limit</p>
+<body>
+    <div class="container">
+        <!-- Alert Header -->
+        <div class="alert-header">
+            <div class="alert-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                </svg>
+            </div>
+            <h1>Budget Alert!</h1>
+            <p class="alert-subtitle">You're approaching your spending limit</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="greeting">
+                <h2>Hello <%= user.name %>,</h2>
+                <p>
+                    We noticed that you've spent <span class="highlight"><%= budget.percentage %>%</span> 
+                    of your budget for the <span class="category"><%= category.name %></span> category.
+                </p>
+            </div>
+
+            <!-- Budget Progress -->
+            <div class="budget-progress">
+                <div class="progress-header">
+                    <span class="category-name"><%= category.name %></span>
+                    <span class="percentage-used"><%= budget.percentage %>% used</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: <%= Math.min(budget.percentage, 100) %>%"></div>
+                </div>
+                <div class="progress-details">
+                    <span>Spent: $<%= budget.spent.toFixed(2) %></span>
+                    <span>Budget: $<%= category.monthly_budget.toFixed(2) %></span>
+                </div>
+            </div>
+
+            <!-- Alert Details -->
+            <div class="alert-details">
+                <div class="alert-details-content">
+                    <div class="alert-details-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                    </div>
+                    <div class="alert-details-text">
+                        <h3>Alert Details</h3>
+                        <ul>
+                            <li>Alert triggered at <%= category.budget_threshold %>% of budget</li>
+                            <li>You have $<%= (category.monthly_budget - budget.spent).toFixed(2) %> remaining for this category</li>
+                            <li>Current spending rate: $<%= (budget.spent / new Date().getDate()).toFixed(2) %>/day</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Steps -->
+            <div class="action-steps">
+                <h3>
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/>
+                    </svg>
+                    Recommended Actions
+                </h3>
+                <div class="action-grid">
+                    <div class="action-card">
+                        <h4>1. Review Recent Spending</h4>
+                        <p>Check your recent transactions in this category</p>
+                    </div>
+                    <div class="action-card">
+                        <h4>2. Adjust Budget</h4>
+                        <p>Consider increasing your budget if needed</p>
+                    </div>
+                    <div class="action-card">
+                        <h4>3. Find Alternatives</h4>
+                        <p>Look for cheaper alternatives or reduce usage</p>
+                    </div>
+                    <div class="action-card">
+                        <h4>4. Pause Spending</h4>
+                        <p>Consider pausing non-essential spending in this category</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div class="button-container">
+                <a href="<%= process.env.FRONTEND_DEV_URL %>/dashboard/budget" class="cta-button">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                    </svg>
+                    Review Your Budget
+                </a>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="notification-settings">
+                <p class="notification-text">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+                    </svg>
+                    You're receiving this alert because you enabled budget notifications in your settings.
+                </p>
+                <p class="settings-link">
+                    To change your notification preferences, visit your 
+                    <a href="<%= process.env.FRONTEND_DEV_URL %>/settings">account settings</a>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>This is an automated message from Fiscal Focus.</p>
+            <p>© <%= year %> Fiscal Focus. All rights reserved.</p>
+        </div>
     </div>
-
-    <!-- Main Content -->
-    <div class="bg-white rounded-b-2xl shadow-lg p-8">
-      <div class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-800 mb-3">Hello <%= user.name %>,</h2>
-        <p class="text-gray-700 mb-6">
-          We noticed that you've spent <span class="font-bold text-red-600"><%= budget.percentage %>%</span> 
-          of your budget for the <span class="font-semibold"><%= category.name %></span> category.
-        </p>
-
-        <!-- Budget Progress -->
-        <div class="mb-8">
-          <div class="flex justify-between mb-2">
-            <span class="text-sm font-medium text-gray-700"><%= category.name %></span>
-            <span class="text-sm font-medium text-red-600"><%= budget.percentage %>% used</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-3">
-            <div class="bg-gradient-to-r from-orange-400 to-red-500 h-3 rounded-full" 
-                 style=""><%= Math.min(budget.percentage, 100) %></div>
-          </div>
-          <div class="flex justify-between mt-2 text-sm text-gray-500">
-            <span>Spent: $<%= budget.spent.toFixed(2) %></span>
-            <span>Budget: $<%= category.monthly_budget.toFixed(2) %></span>
-          </div>
-        </div>
-
-        <!-- Alert Details -->
-        <div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-8">
-          <div class="flex items-start">
-            <span class="text-red-600 mr-3">ℹ️</span>
-            <div>
-              <h3 class="font-semibold text-red-700 mb-2">Alert Details</h3>
-              <ul class="text-sm text-red-700 space-y-1">
-                <li>• Alert triggered at <%= category.budget_threshold %>% of budget</li>
-                <li>• You have $<%= (category.monthly_budget - budget.spent).toFixed(2) %> remaining for this category</li>
-                <li>• Current spending rate: $<%= (budget.spent / new Date().getDate()).toFixed(2) %>/day</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Steps -->
-        <div class="mb-8">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">💡 Recommended Actions:</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-blue-50 p-4 rounded-lg">
-              <div class="text-blue-600 font-semibold mb-2">1. Review Recent Spending</div>
-              <p class="text-sm text-gray-700">Check your recent transactions in this category</p>
-            </div>
-            <div class="bg-green-50 p-4 rounded-lg">
-              <div class="text-green-600 font-semibold mb-2">2. Adjust Budget</div>
-              <p class="text-sm text-gray-700">Consider increasing your budget if needed</p>
-            </div>
-            <div class="bg-purple-50 p-4 rounded-lg">
-              <div class="text-purple-600 font-semibold mb-2">3. Find Alternatives</div>
-              <p class="text-sm text-gray-700">Look for cheaper alternatives or reduce usage</p>
-            </div>
-            <div class="bg-yellow-50 p-4 rounded-lg">
-              <div class="text-yellow-600 font-semibold mb-2">4. Pause Spending</div>
-              <p class="text-sm text-gray-700">Consider pausing non-essential spending in this category</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- CTA Button -->
-        <div class="text-center">
-          <a href="<%= process.env.FRONTEND_DEV_URL %>/dashboard/budget" 
-             class="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-md hover:shadow-lg">
-            Review Your Budget →
-          </a>
-        </div>
-      </div>
-
-      <!-- Notification Settings -->
-      <div class="border-t border-gray-200 pt-6">
-        <p class="text-gray-500 text-sm mb-4">
-          🔔 You're receiving this alert because you enabled budget notifications in your settings.
-        </p>
-        <p class="text-gray-400 text-xs">
-          To change your notification preferences, visit your 
-          <a href="<%= process.env.FRONTEND_DEV_URL %>/settings" class="text-blue-500 hover:text-blue-700">account settings</a>.
-        </p>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="text-center mt-8 text-gray-500 text-sm">
-      <p>This is an automated message from Fiscal Focus.</p>
-      <p class="mt-1">© <%= year %> Fiscal Focus. All rights reserved.</p>
-    </div>
-  </div>
 </body>
 </html>
