@@ -95,8 +95,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "language": "en",
         "profile_visibility": "private"
       },
-      "created_at": "2024-01-15T10:30:00.000Z",
-      "updated_at": "2024-01-15T10:30:00.000Z"
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -154,8 +154,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "profile_visibility": "private"
       },
       "age": 33,
-      "created_at": "2024-01-15T10:30:00.000Z",
-      "updated_at": "2024-01-15T11:30:00.000Z"
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T11:30:00.000Z"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -242,8 +242,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "profile_visibility": "private"
       },
       "age": 33,
-      "created_at": "2024-01-15T10:30:00.000Z",
-      "updated_at": "2024-01-15T11:30:00.000Z"
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T11:30:00.000Z"
     }
   }
 }
@@ -297,8 +297,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "profile_visibility": "public"
       },
       "age": 33,
-      "created_at": "2024-01-15T10:30:00.000Z",
-      "updated_at": "2024-01-15T12:00:00.000Z"
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T12:00:00.000Z"
     }
   }
 }
@@ -407,8 +407,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "total_income": 2000,
       "savings": 300,
       "is_active": true,
-      "created_at": "2024-01-01T00:00:00.000Z",
-      "updated_at": "2024-01-15T12:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-15T12:00:00.000Z"
     },
     "recentTransactions": [
       {
@@ -712,8 +712,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "savings": 0,
       "is_active": true,
       "user_id": "550e8400-e29b-41d4-a716-446655440000",
-      "created_at": "2024-01-15T12:00:00.000Z",
-      "updated_at": "2024-01-15T12:00:00.000Z"
+      "createdAt": "2024-01-15T12:00:00.000Z",
+      "updatedAt": "2024-01-15T12:00:00.000Z"
     }
   }
 }
@@ -749,8 +749,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "total_income": 2000,
         "savings": 300,
         "is_active": true,
-        "created_at": "2024-01-01T00:00:00.000Z",
-        "updated_at": "2024-01-15T12:00:00.000Z"
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-15T12:00:00.000Z"
       },
       {
         "id": "660e8400-e29b-41d4-a716-446655440007",
@@ -761,8 +761,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "total_income": 1900,
         "savings": 250,
         "is_active": false,
-        "created_at": "2023-12-01T00:00:00.000Z",
-        "updated_at": "2024-01-01T00:00:00.000Z"
+        "createdAt": "2023-12-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z"
       }
     ]
   }
@@ -891,7 +891,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "savings": 400,
       "is_active": true,
       "notes": "Increased budget for groceries",
-      "updated_at": "2024-01-15T13:00:00.000Z"
+      "updatedAt": "2024-01-15T13:00:00.000Z"
     }
   }
 }
@@ -952,8 +952,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "budget_threshold": 80,
       "is_default": false,
       "user_id": "550e8400-e29b-41d4-a716-446655440000",
-      "created_at": "2024-01-15T13:00:00.000Z",
-      "updated_at": "2024-01-15T13:00:00.000Z"
+      "createdAt": "2024-01-15T13:00:00.000Z",
+      "updatedAt": "2024-01-15T13:00:00.000Z"
     }
   }
 }
@@ -989,8 +989,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "monthly_budget": 400,
         "budget_threshold": 80,
         "is_default": false,
-        "created_at": "2024-01-01T00:00:00.000Z",
-        "updated_at": "2024-01-15T12:00:00.000Z"
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-15T12:00:00.000Z"
       },
       {
         "id": "880e8400-e29b-41d4-a716-446655440006",
@@ -1001,8 +1001,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         "monthly_budget": 350,
         "budget_threshold": 90,
         "is_default": false,
-        "created_at": "2024-01-01T00:00:00.000Z",
-        "updated_at": "2024-01-10T00:00:00.000Z"
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-10T00:00:00.000Z"
       }
     ]
   }
@@ -1085,8 +1085,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "monthly_budget": 400,
       "budget_threshold": 80,
       "is_default": false,
-      "created_at": "2024-01-01T00:00:00.000Z",
-      "updated_at": "2024-01-15T12:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-15T12:00:00.000Z"
     },
     "spending": {
       "total": 450,
@@ -1143,7 +1143,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "monthly_budget": 450,
       "budget_threshold": 85,
       "color": "#DC2626",
-      "updated_at": "2024-01-15T14:00:00.000Z"
+      "updatedAt": "2024-01-15T14:00:00.000Z"
     }
   }
 }
@@ -1236,8 +1236,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "category_id": "880e8400-e29b-41d4-a716-446655440003",
       "budget_id": "660e8400-e29b-41d4-a716-446655440001",
       "user_id": "550e8400-e29b-41d4-a716-446655440000",
-      "created_at": "2024-01-15T14:30:00.000Z",
-      "updated_at": "2024-01-15T14:30:00.000Z"
+      "createdAt": "2024-01-15T14:30:00.000Z",
+      "updatedAt": "2024-01-15T14:30:00.000Z"
     },
     "balanceUpdate": {
       "current_balance": 800.00,
@@ -1424,8 +1424,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "category_id": "880e8400-e29b-41d4-a716-446655440003",
       "budget_id": "660e8400-e29b-41d4-a716-446655440001",
       "user_id": "550e8400-e29b-41d4-a716-446655440000",
-      "created_at": "2024-01-15T14:30:00.000Z",
-      "updated_at": "2024-01-15T14:30:00.000Z",
+      "createdAt": "2024-01-15T14:30:00.000Z",
+      "updatedAt": "2024-01-15T14:30:00.000Z",
       "Category": {
         "id": "880e8400-e29b-41d4-a716-446655440003",
         "name": "Food & Dining",
@@ -1472,7 +1472,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "amount": 50.00,
       "description": "Grocery shopping at Walmart (Updated)",
       "notes": "Including some extra items",
-      "updated_at": "2024-01-15T15:00:00.000Z"
+      "updatedAt": "2024-01-15T15:00:00.000Z"
     },
     "balanceUpdate": {
       "current_balance": 795.50,

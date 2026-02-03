@@ -1,12 +1,17 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiTag, FiDollarSign, FiPercent, FiDroplet } from 'react-icons/fi';
+import { useState, useEffect } from 'react'; // Add useEffect
+import { useNavigate, useParams } from 'react-router-dom';
+import { FiTag, FiDollarSign, FiPercent, FiDroplet, FiArrowLeft } from 'react-icons/fi';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 const CreateCategory = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // Get id from URL
+  
+  const isEditMode = !!id; // Check if we're in edit mode
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEditMode); // Loading state for fetching data
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -15,6 +20,36 @@ const CreateCategory = () => {
     monthly_budget: '',
     budget_threshold: 80,
   });
+
+  // Fetch category data if in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      fetchCategory();
+    }
+  }, [id]);
+
+  const fetchCategory = async () => {
+    try {
+      const response = await api.get(`/categories/${id}`);
+      if (response.data.success) {
+        const category = response.data.data.category;
+        setFormData({
+          name: category.name || '',
+          description: category.description || '',
+          color: category.color || '#3B82F6',
+          icon: category.icon || 'tag',
+          monthly_budget: category.monthly_budget?.toString() || '',
+          budget_threshold: category.budget_threshold || 80,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching category:', error);
+      toast.error('Failed to load category');
+      navigate('/categories');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const colors = [
     { value: '#EF4444', label: 'Red' },
@@ -61,25 +96,60 @@ const CreateCategory = () => {
         budget_threshold: parseInt(formData.budget_threshold),
       };
       
-      const response = await api.post('/categories', categoryData);
+      let response;
+      
+      if (isEditMode) {
+        // UPDATE existing category
+        response = await api.put(`/categories/${id}`, categoryData);
+      } else {
+        // CREATE new category
+        response = await api.post('/categories', categoryData);
+      }
       
       if (response.data.success) {
-        toast.success('Category created successfully');
+        toast.success(isEditMode ? 'Category updated successfully' : 'Category created successfully');
         navigate('/categories');
       }
     } catch (error) {
-      console.error('Error creating category:', error);
-      toast.error(error.response?.data?.message || 'Failed to create category');
+      console.error('Error saving category:', error);
+      toast.error(error.response?.data?.message || 
+        (isEditMode ? 'Failed to update category' : 'Failed to create category'));
     } finally {
       setLoading(false);
     }
   };
 
+  // Show loading state when fetching data in edit mode
+  if (fetching) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Header with back button */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Create Category</h1>
-        <p className="text-gray-600 mt-1">Add a new spending category</p>
+        <button
+          onClick={() => navigate('/categories')}
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <FiArrowLeft className="h-4 w-4 mr-2" />
+          Back to Categories
+        </button>
+        
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isEditMode ? 'Edit Category' : 'Create Category'}
+        </h1>
+        <p className="text-gray-600 mt-1">
+          {isEditMode ? 'Update your category details' : 'Add a new spending category'}
+        </p>
       </div>
 
       <div className="card">
@@ -236,7 +306,9 @@ const CreateCategory = () => {
               disabled={loading}
               className="btn-primary"
             >
-              {loading ? 'Creating...' : 'Create Category'}
+              {loading 
+                ? (isEditMode ? 'Updating...' : 'Creating...') 
+                : (isEditMode ? 'Update Category' : 'Create Category')}
             </button>
           </div>
         </form>

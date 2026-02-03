@@ -9,7 +9,7 @@ import {
   FiMapPin,
   FiCreditCard,
   FiRepeat,
-  FiDollarSign
+  FiDollarSign,
 } from 'react-icons/fi';
 import { format } from 'date-fns';
 import api from '../../services/api';
@@ -246,7 +246,7 @@ const TransactionDetail = () => {
                 <div>
                   <span className="text-gray-500">Created:</span>
                   <p className="text-gray-900">
-                    {format(new Date(transaction.created_at), 'MMM d, yyyy')}
+                    {format(new Date(transaction.createdAt), 'MMM d, yyyy')}
                   </p>
                 </div>
                 <div>
@@ -262,7 +262,7 @@ const TransactionDetail = () => {
                 <div>
                   <span className="text-gray-500">Last Updated:</span>
                   <p className="text-gray-900">
-                    {format(new Date(transaction.updated_at), 'MMM d, yyyy')}
+                    {format(new Date(transaction.updatedAt), 'MMM d, yyyy')}
                   </p>
                 </div>
               </div>
@@ -341,16 +341,10 @@ const TransactionDetail = () => {
             </h3>
             <div className="space-y-3">
               <button
-                onClick={() => navigate('/transactions/create')}
-                className="w-full btn-primary"
+                onClick={() => navigate(`/transactions/create?duplicate=${id}`)}
+                className="w-full btn-primary flex items-center justify-center"
               >
                 Add Similar Transaction
-              </button>
-              <button
-                onClick={() => navigate(`/transactions/edit/${id}`)}
-                className="w-full btn-secondary"
-              >
-                Duplicate Transaction
               </button>
               <button
                 onClick={() => {

@@ -10,7 +10,8 @@ const startServer = async () => {
     console.log("✅ Database connected successfully");
 
     // Sync database (use { force: true } only in development to drop tables)
-    await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    // await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    await sequelize.sync();
     console.log("✅ Database synchronized");
 
     // Start server

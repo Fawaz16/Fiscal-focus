@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiCalendar, FiDollarSign, FiPlus, FiMinus } from 'react-icons/fi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FiCalendar, FiDollarSign, FiPlus, FiMinus, FiArrowLeft } from 'react-icons/fi';
 import { format } from 'date-fns';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 const CreateBudget = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  
+  const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEditMode);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     month: new Date().getMonth() + 1,
@@ -17,8 +21,32 @@ const CreateBudget = () => {
   });
 
   useEffect(() => {
+    if (isEditMode) {
+      fetchBudget();
+    }
     fetchCategories();
-  }, []);
+  }, [id]);
+
+  const fetchBudget = async () => {
+    try {
+      const response = await api.get(`/budgets/${id}`);
+      if (response.data.success) {
+        const budget = response.data.data.budget;
+        setFormData({
+          month: budget.month,
+          year: budget.year,
+          total_budget: budget.total_budget?.toString() || '',
+          categories: budget.categories || [],
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching budget:', error);
+      toast.error('Failed to load budget');
+      navigate('/budgets');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -118,30 +146,60 @@ const CreateBudget = () => {
         total_budget: parseFloat(formData.total_budget),
       };
       
-      const response = await api.post('/budgets', budgetData);
+      let response;
+      
+      if (isEditMode) {
+        response = await api.put(`/budgets/${id}`, budgetData);
+      } else {
+        response = await api.post('/budgets', budgetData);
+      }
       
       if (response.data.success) {
-        toast.success('Budget created successfully');
+        toast.success(isEditMode ? 'Budget updated successfully' : 'Budget created successfully');
         navigate('/budgets');
       }
     } catch (error) {
-      console.error('Error creating budget:', error);
-      toast.error(error.response?.data?.message || 'Failed to create budget');
+      console.error('Error saving budget:', error);
+      toast.error(error.response?.data?.message || 
+        (isEditMode ? 'Failed to update budget' : 'Failed to create budget'));
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Create Budget</h1>
-        <p className="text-gray-600 mt-1">Plan your spending for the month</p>
+        <button
+          onClick={() => navigate('/budgets')}
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <FiArrowLeft className="h-4 w-4 mr-2" />
+          Back to Budgets
+        </button>
+        
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isEditMode ? 'Edit Budget' : 'Create Budget'}
+        </h1>
+        <p className="text-gray-600 mt-1">
+          {isEditMode ? 'Update your budget details' : 'Plan your spending for the month'}
+        </p>
       </div>
 
       <div className="card">
         <form onSubmit={handleSubmit}>
-          {/* Period Selection */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div>
               <label className="label">
@@ -211,7 +269,6 @@ const CreateBudget = () => {
             </div>
           </div>
 
-          {/* Category Budgets */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Category Budgets</h3>
@@ -289,7 +346,6 @@ const CreateBudget = () => {
             )}
           </div>
 
-          {/* Budget Summary */}
           <div className="bg-blue-50 rounded-xl p-6 mb-8">
             <h3 className="font-medium text-blue-900 mb-4">Budget Summary</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -318,7 +374,6 @@ const CreateBudget = () => {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
@@ -332,7 +387,9 @@ const CreateBudget = () => {
               disabled={loading}
               className="btn-primary"
             >
-              {loading ? 'Creating...' : 'Create Budget'}
+              {loading 
+                ? (isEditMode ? 'Updating...' : 'Creating...') 
+                : (isEditMode ? 'Update Budget' : 'Create Budget')}
             </button>
           </div>
         </form>

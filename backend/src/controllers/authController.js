@@ -54,10 +54,10 @@ class AuthController {
       const token = generateToken(user.id);
 
       // Send welcome email
-      await EmailService.sendWelcomeEmail(user);
+      // await EmailService.sendWelcomeEmail(user);
 
       // Send verification email
-      await EmailService.sendVerificationEmail(user, user.verification_token);
+      // await EmailService.sendVerificationEmail(user, user.verification_token);
 
       res.status(201).json({
         success: true,

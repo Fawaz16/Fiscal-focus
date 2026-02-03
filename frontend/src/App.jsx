@@ -106,6 +106,7 @@ function App() {
             <Route path="transactions">
               <Route index element={<Transactions />} />
               <Route path="create" element={<CreateTransaction />} />
+              <Route path="edit/:id" element={<CreateTransaction />} />
               <Route path=":id" element={<TransactionDetail />} />
             </Route>
 
@@ -113,6 +114,7 @@ function App() {
             <Route path="budgets">
               <Route index element={<Budgets />} />
               <Route path="create" element={<CreateBudget />} />
+              <Route path="edit/:id" element={<CreateBudget />} />
               <Route path=":id" element={<BudgetDetail />} />
             </Route>
 
@@ -120,6 +122,7 @@ function App() {
             <Route path="categories">
               <Route index element={<Categories />} />
               <Route path="create" element={<CreateCategory />} />
+              <Route path="edit/:id" element={<CreateCategory />} />
               <Route path=":id" element={<CategoryDetail />} />
             </Route>
 

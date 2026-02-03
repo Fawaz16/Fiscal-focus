@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FiPlus, 
-  FiFilter, 
-  FiDownload, 
+import {
+  FiPlus,
+  FiFilter,
+  FiDownload,
   FiSearch,
   FiCalendar,
   FiTrendingUp,
@@ -51,22 +51,22 @@ const Transactions = () => {
         page: pagination.page,
         limit: pagination.limit,
       };
-      
+
       const response = await api.get('/transactions', { params });
-      
+
       if (response.data.success) {
         setTransactions(response.data.data.transactions);
         setPagination(response.data.data.pagination);
-        
+
         // Calculate stats from transactions
         const income = response.data.data.transactions
           .filter(t => t.type === 'income')
           .reduce((sum, t) => sum + t.amount, 0);
-        
+
         const expenses = response.data.data.transactions
           .filter(t => t.type === 'expense')
           .reduce((sum, t) => sum + t.amount, 0);
-        
+
         setStats({
           totalIncome: income,
           totalExpenses: expenses,
@@ -103,7 +103,7 @@ const Transactions = () => {
   const handleQuickFilter = (days) => {
     const endDate = new Date();
     const startDate = subDays(endDate, days);
-    
+
     setFilters(prev => ({
       ...prev,
       startDate: format(startDate, 'yyyy-MM-dd'),
@@ -345,9 +345,8 @@ const Transactions = () => {
             </div>
             <FiTrendingUp className="h-8 w-8 text-blue-600" />
           </div>
-          <p className={`text-sm mt-2 ${
-            stats.netBalance >= 0 ? 'text-blue-600' : 'text-red-600'
-          }`}>
+          <p className={`text-sm mt-2 ${stats.netBalance >= 0 ? 'text-blue-600' : 'text-red-600'
+            }`}>
             {stats.netBalance >= 0 ? 'Positive cash flow' : 'Negative cash flow'}
           </p>
         </div>
@@ -406,17 +405,14 @@ const Transactions = () => {
                   <tr key={transaction.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                          transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                        }`}>
+                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
                           {transaction.type === 'income' ? (
-                            <FiTrendingUp className={`h-5 w-5 ${
-                              transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                            }`} />
+                            <FiTrendingUp className={`h-5 w-5 ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                              }`} />
                           ) : (
-                            <FiTrendingDown className={`h-5 w-5 ${
-                              transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                            }`} />
+                            <FiTrendingDown className={`h-5 w-5 ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                              }`} />
                           )}
                         </div>
                         <div className="ml-4">
@@ -431,7 +427,7 @@ const Transactions = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div 
+                        <div
                           className="h-3 w-3 rounded-full mr-2"
                           style={{ backgroundColor: transaction.Category?.color }}
                         />
@@ -452,9 +448,8 @@ const Transactions = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`font-semibold ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <span className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                        }`}>
                         {transaction.type === 'income' ? '+' : '-'}
                         ${transaction.amount.toFixed(2)}
                       </span>
@@ -474,9 +469,12 @@ const Transactions = () => {
                       >
                         View
                       </Link>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <Link
+                        to={`/transactions/edit/${transaction.id}`}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
                         Edit
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}

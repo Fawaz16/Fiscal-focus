@@ -220,7 +220,7 @@ const Budgets = () => {
                       {getMonthName(budget.month)} {budget.year}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Created {format(new Date(budget.created_at), 'MMM d, yyyy')}
+                      Created  {budget.createdAt ? format(new Date(budget.createdAt), 'MMM d, yyyy') : 'N/A'}
                     </p>
                   </div>
                   <span className={`badge ${

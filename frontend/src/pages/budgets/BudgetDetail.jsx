@@ -12,6 +12,22 @@ const BudgetDetail = () => {
   const [loading, setLoading] = useState(true);
   const [categorySpending, setCategorySpending] = useState([]);
 
+  // Safe date formatting helper
+  const safeFormat = (dateString, formatStr) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return format(date, formatStr);
+  };
+
+  // Get month name safely
+  const getMonthName = (month) => {
+    if (!month || !budget?.year) return 'Invalid month';
+    const date = new Date(budget.year, month - 1, 1);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return format(date, 'MMMM');
+  };
+
   useEffect(() => {
     fetchBudgetDetails();
   }, [id]);
@@ -19,12 +35,12 @@ const BudgetDetail = () => {
   const fetchBudgetDetails = async () => {
     try {
       const response = await api.get(`/budgets/${id}`);
+      
       if (response.data.success) {
         setBudget(response.data.data.budget);
         setCategorySpending(response.data.data.categorySpending || []);
       }
     } catch (error) {
-      console.error('Error fetching budget:', error);
       toast.error('Budget not found');
       navigate('/budgets');
     } finally {
@@ -61,11 +77,9 @@ const BudgetDetail = () => {
 
   const progress = (budget.total_spent / budget.total_budget) * 100;
   const remaining = budget.total_budget - budget.total_spent;
-
-  const getMonthName = (month) => {
-    const date = new Date(budget.year, month - 1, 1);
-    return format(date, 'MMMM');
-  };
+  const savingsRate = budget.total_income > 0 
+    ? ((budget.savings / budget.total_income) * 100) 
+    : 0;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -81,7 +95,7 @@ const BudgetDetail = () => {
                 {getMonthName(budget.month)} {budget.year} Budget
               </h1>
               <p className="text-gray-600 mt-1">
-                Created {format(new Date(budget.created_at), 'MMM d, yyyy')}
+                Created {safeFormat(budget.createdAt, 'MMM d, yyyy')}
               </p>
             </div>
           </div>
@@ -179,7 +193,8 @@ const BudgetDetail = () => {
             <div className="space-y-4">
               {categorySpending.length > 0 ? (
                 categorySpending.map((item) => {
-                  const catProgress = (item.total_spent / (item.Category?.monthly_budget || 1)) * 100;
+                  const categoryBudget = item.Category?.monthly_budget || 1;
+                  const catProgress = (item.total_spent / categoryBudget) * 100;
                   return (
                     <div key={item.category_id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
@@ -199,10 +214,10 @@ const BudgetDetail = () => {
                       </div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">
-                          ${item.total_spent?.toFixed(2)} / ${item.Category?.monthly_budget?.toFixed(2)}
+                          ${item.total_spent?.toFixed(2)} / ${categoryBudget.toFixed(2)}
                         </span>
                         <span className="text-gray-600">
-                          ${(item.Category?.monthly_budget - item.total_spent).toFixed(2)} remaining
+                          ${(categoryBudget - item.total_spent).toFixed(2)} remaining
                         </span>
                       </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -245,9 +260,7 @@ const BudgetDetail = () => {
               <div>
                 <p className="text-sm text-gray-600">Savings Rate</p>
                 <p className="text-xl font-bold text-blue-600">
-                  {budget.total_income > 0 
-                    ? ((budget.savings / budget.total_income) * 100).toFixed(1) 
-                    : '0'}%
+                  {savingsRate.toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -266,7 +279,7 @@ const BudgetDetail = () => {
                   <div>
                     <p className="font-medium text-gray-900">{transaction.description}</p>
                     <p className="text-sm text-gray-500">
-                      {transaction.Category?.name} • {format(new Date(transaction.date), 'MMM d')}
+                      {transaction.Category?.name} • {safeFormat(transaction.date, 'MMM d')}
                     </p>
                   </div>
                   <span className={`font-semibold ${
@@ -294,7 +307,7 @@ const BudgetDetail = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Daily Average</span>
                 <span className="font-medium">
-                  ${(budget.total_spent / new Date().getDate()).toFixed(2)}
+                  ${new Date().getDate() > 0 ? (budget.total_spent / new Date().getDate()).toFixed(2) : '0.00'}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -304,7 +317,7 @@ const BudgetDetail = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Updated</span>
                 <span className="font-medium">
-                  {format(new Date(budget.updated_at), 'MMM d, yyyy')}
+                  {safeFormat(budget.updatedAt, 'MMM d, yyyy')}
                 </span>
               </div>
             </div>

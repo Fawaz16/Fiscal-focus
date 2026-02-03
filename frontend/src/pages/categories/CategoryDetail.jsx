@@ -284,14 +284,14 @@ const CategoryDetail = () => {
               <div>
                 <p className="text-sm text-gray-600">Created</p>
                 <p className="font-medium">
-                  {format(new Date(category.created_at), 'MMM d, yyyy')}
+                   {category.createdAt ? format(new Date(category.createdAt), 'MMM d, yyyy') : 'Unknown'}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-600">Last Updated</p>
                 <p className="font-medium">
-                  {format(new Date(category.updated_at), 'MMM d, yyyy')}
+                  {category.updatedAt ? format(new Date(category.updatedAt), 'MMM d, yyyy') : 'Unknown'}
                 </p>
               </div>
             </div>

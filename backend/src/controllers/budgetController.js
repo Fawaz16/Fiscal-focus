@@ -1,4 +1,6 @@
-const { Budget, Category, Transaction } = require('../models/index');
+const { Budget, Category, Transaction } = require("../models/index");
+const { Op } = require("sequelize");
+const { sequelize } = require("../config/db");
 
 class BudgetController {
   static async createBudget(req, res, next) {
@@ -18,7 +20,7 @@ class BudgetController {
       if (existingBudget) {
         return res.status(400).json({
           success: false,
-          message: 'Budget already exists for this period'
+          message: "Budget already exists for this period"
         });
       }
 
@@ -42,7 +44,7 @@ class BudgetController {
 
       res.status(201).json({
         success: true,
-        message: 'Budget created successfully',
+        message: "Budget created successfully",
         data: { budget }
       });
     } catch (error) {
@@ -54,7 +56,7 @@ class BudgetController {
     try {
       const budgets = await Budget.findAll({
         where: { user_id: req.user.id },
-        order: [['year', 'DESC'], ['month', 'DESC']]
+        order: [["year", "DESC"], ["month", "DESC"]]
       });
 
       res.json({
@@ -85,31 +87,33 @@ class BudgetController {
       if (!budget) {
         return res.status(404).json({
           success: false,
-          message: 'Budget not found'
+          message: "Budget not found"
         });
       }
 
       // Calculate spending by category
       const categorySpending = await Transaction.findAll({
         attributes: [
-          'category_id',
-          [sequelize.fn('SUM', sequelize.col('amount')), 'total_spent']
+          "category_id",
+          [sequelize.fn("SUM", sequelize.col("amount")), "total_spent"]
         ],
         where: {
           user_id: req.user.id,
-          type: 'expense',
+          type: "expense",
           date: {
-            [sequelize.Op.between]: [
+            [Op.between]: [
               new Date(budget.year, budget.month - 1, 1),
               new Date(budget.year, budget.month, 0)
             ]
           }
         },
-        include: [{
-          model: Category,
-          attributes: ['name', 'color', 'monthly_budget']
-        }],
-        group: ['category_id']
+        include: [
+          {
+            model: Category,
+            attributes: ["name", "color", "monthly_budget"]
+          }
+        ],
+        group: ["category_id"]
       });
 
       res.json({
@@ -139,7 +143,7 @@ class BudgetController {
       if (!budget) {
         return res.status(404).json({
           success: false,
-          message: 'Budget not found'
+          message: "Budget not found"
         });
       }
 
@@ -147,7 +151,7 @@ class BudgetController {
 
       res.json({
         success: true,
-        message: 'Budget updated successfully',
+        message: "Budget updated successfully",
         data: { budget }
       });
     } catch (error) {
@@ -169,7 +173,7 @@ class BudgetController {
       if (!budget) {
         return res.status(404).json({
           success: false,
-          message: 'Budget not found'
+          message: "Budget not found"
         });
       }
 
@@ -177,7 +181,7 @@ class BudgetController {
 
       res.json({
         success: true,
-        message: 'Budget deleted successfully'
+        message: "Budget deleted successfully"
       });
     } catch (error) {
       next(error);
@@ -204,7 +208,7 @@ class BudgetController {
           success: true,
           data: {
             hasBudget: false,
-            message: 'No active budget for this month'
+            message: "No active budget for this month"
           }
         });
       }
@@ -217,21 +221,21 @@ class BudgetController {
         where: {
           user_id: req.user.id,
           date: {
-            [sequelize.Op.between]: [startDate, endDate]
+            [Op.between]: [startDate, endDate] // Changed from sequelize.Op.between to Op.between
           }
         }
       });
 
       const totalIncome = transactions
-        .filter(t => t.type === 'income')
+        .filter(t => t.type === "income")
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
       const totalExpenses = transactions
-        .filter(t => t.type === 'expense')
+        .filter(t => t.type === "expense")
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
       const remainingBudget = budget.total_budget - totalExpenses;
-      const budgetUtilization = (totalExpenses / budget.total_budget) * 100;
+      const budgetUtilization = totalExpenses / budget.total_budget * 100;
 
       res.json({
         success: true,
