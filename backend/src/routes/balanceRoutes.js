@@ -4,10 +4,10 @@ const UserController = require('../controllers/userController');
 const { auth } = require('../middleware/auth');
 
 // Balance endpoints
-router.get('/balance', auth, UserController.getBalance);
-router.get('/balance/update', auth, UserController.getBalanceUpdate);
-router.get('/balance/forecast', auth, UserController.getBalanceForecast);
-router.get('/balance/categories', auth, UserController.getCategoryBreakdown);
-router.get('/balance/savings-progress', auth, UserController.getSavingsProgress);
+router.get('/', auth, UserController.getBalance);
+router.get('/update', auth, UserController.getBalanceUpdate);
+router.get('/forecast', auth, UserController.getBalanceForecast);
+router.get('/categories', auth, UserController.getCategoryBreakdown);
+router.get('/savings-progress', auth, UserController.getSavingsProgress);
 
 module.exports = router;

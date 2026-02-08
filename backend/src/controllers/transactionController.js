@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { sequelize } = require("../config/db");
 const { Transaction, Category, Budget } = require('../models/index');
 const NotificationService = require('../services/notificationService');
 const BalanceService = require('../services/balanceService');
@@ -318,7 +319,7 @@ class TransactionController {
         .map(([name, amount]) => ({ name, amount }));
 
       // Daily spending trend
-      const dailyData = await this.getDailySpending(userId, startDate, endDate);
+      const dailyData = await TransactionController.getDailySpending(userId, startDate, endDate);
 
       res.json({
         success: true,

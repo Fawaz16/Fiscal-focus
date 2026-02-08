@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiTrendingUp, FiTrendingDown, FiDollarSign, FiTarget } from 'react-icons/fi';
 import { 
   BarChart, 
@@ -6,8 +6,7 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
+  Tooltip,
   PieChart,
   Pie,
   Cell
@@ -20,9 +19,27 @@ import BudgetProgress from '../../components/dashboard/BudgetProgress';
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 300 });
+  const chartContainerRef = useRef(null);
 
   useEffect(() => {
     fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    const updateChartDimensions = () => {
+      if (chartContainerRef.current) {
+        const width = chartContainerRef.current.clientWidth;
+        setChartDimensions({ width, height: 300 });
+      }
+    };
+
+    updateChartDimensions();
+    window.addEventListener('resize', updateChartDimensions);
+    
+    return () => {
+      window.removeEventListener('resize', updateChartDimensions);
+    };
   }, []);
 
   const fetchDashboardData = async () => {
@@ -40,12 +57,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded"></div>
-          ))}
+      <div className="animate-pulse space-y-6 w-full h-100 flex items-center justify-center">
+        <div className="flex items-center justify-center">
+          Loading Dashboard...
         </div>
       </div>
     );
@@ -106,6 +120,17 @@ const Dashboard = () => {
     expenses: 0,
   }));
 
+  if (loading) {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+        <p className="mt-4 text-gray-600 font-medium">Loading your dashboard...</p>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="space-y-6">
       {/* Welcome */}
@@ -126,11 +151,16 @@ const Dashboard = () => {
       {/* Charts and Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Monthly Spending Chart */}
-        <div className="lg:col-span-2 card">
+        <div className="lg:col-span-2 card" ref={chartContainerRef}>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Spending</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlySpendingData}>
+          <div className="h-80 w-full">
+            {chartDimensions.width > 0 && (
+              <BarChart
+                width={chartDimensions.width}
+                height={300}
+                data={monthlySpendingData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -138,33 +168,31 @@ const Dashboard = () => {
                 <Bar dataKey="income" fill="#0ea5e9" name="Income" />
                 <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
               </BarChart>
-            </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         {/* Category Breakdown */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="h-80 flex items-center justify-center">
+            <PieChart width={300} height={300}>
+              <Pie
+                data={categoryData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {categoryData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
           </div>
         </div>
       </div>

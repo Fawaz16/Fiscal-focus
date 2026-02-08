@@ -65,10 +65,9 @@ const TransactionDetail = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="animate-pulse space-y-6 w-full h-100 flex items-center justify-center">
+        <div className="flex items-center justify-center">
+          Loading Transaction Details...
         </div>
       </div>
     );

@@ -183,13 +183,11 @@ const Budgets = () => {
 
       {/* Budgets Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="card animate-pulse">
-              <div className="h-48 bg-gray-200 rounded"></div>
-            </div>
-          ))}
+      <div className="animate-pulse space-y-6 w-full h-100 flex items-center justify-center">
+        <div className="flex items-center justify-center">
+          Loading Budgets...
         </div>
+      </div>
       ) : budgets.length === 0 ? (
         <div className="card text-center py-12">
           <div className="mx-auto h-12 w-12 text-gray-400">

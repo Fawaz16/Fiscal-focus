@@ -60,7 +60,7 @@ api.interceptors.response.use(
           break;
           
         default:
-          toast.error(data.message || 'An error occurred.');
+          // toast.error(data.message || 'An error occurred.');
       }
     } else if (error.request) {
       toast.error('Network error. Please check your connection.');

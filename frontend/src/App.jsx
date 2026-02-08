@@ -8,6 +8,9 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { BalanceProvider } from "./context/BalanceContext";
 
+//App Css
+import "./App.css";
+
 // Layout Components
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/common/ProtectedRoute";

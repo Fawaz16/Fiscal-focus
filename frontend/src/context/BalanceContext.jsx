@@ -3,7 +3,9 @@ import api from '../services/api';
 
 const BalanceContext = createContext({});
 
-export const useBalance = () => useContext(BalanceContext);
+export function useBalance() {
+    return useContext(BalanceContext);
+}
 
 export const BalanceProvider = ({ children }) => {
   const [currentBalance, setCurrentBalance] = useState(null);
