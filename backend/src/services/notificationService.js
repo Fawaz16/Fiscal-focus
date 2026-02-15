@@ -1,11 +1,46 @@
 const EmailService = require('./emailService');
-const { User, Category, Budget, Transaction } = require('../models/index');
-const {Op} = require('sequelize');
-const {sequelize} = require("../config/db");
+const { User, Category, Transaction } = require('../models/index');
+const { Op } = require('sequelize');
+const { sequelize } = require("../config/db");
 
 class NotificationService {
+  static async getUserNotificationSettings(userId) {
+    try {
+      const user = await User.findByPk(userId, {
+        attributes: ['settings']
+      });
+
+      // Default settings
+      const defaultSettings = {
+        emailNotifications: true,
+        pushNotifications: true,
+        budgetAlerts: true,
+        weeklySummary: true,
+        monthlyReport: true,
+        transactionAlerts: true,
+        lowBalanceAlert: true,
+        securityAlerts: true,
+        budgetThreshold: 80,
+        alertFrequency: 'immediate'
+      };
+
+      return user.settings?.notificationPreferences || defaultSettings;
+    } catch (error) {
+      console.error('Error getting user notification settings:', error);
+      return null;
+    }
+  }
+
   static async checkBudgetAlerts(userId) {
     try {
+      // Get user notification settings
+      const settings = await this.getUserNotificationSettings(userId);
+      
+      // If budget alerts are disabled, return empty array
+      if (settings && !settings.budgetAlerts) {
+        return [];
+      }
+
       const categories = await Category.findAll({
         where: { user_id: userId },
         include: [
@@ -37,22 +72,26 @@ class NotificationService {
         const budget = category.monthly_budget;
         
         if (budget > 0) {
+          // Use user's budget threshold setting or default to category threshold
+          const threshold = settings?.budgetThreshold || category.budget_threshold || 80;
           const percentage = (totalSpent / budget) * 100;
           
-          if (percentage >= category.budget_threshold) {
+          if (percentage >= threshold) {
             alerts.push({
               category: category.name,
               spent: totalSpent,
               budget,
               percentage: Math.round(percentage),
+              threshold
             });
 
-            // Send email alert if threshold reached
-            if (user.settings?.notifications !== false) {
+            // Send email alert if email notifications are enabled
+            if (settings?.emailNotifications !== false) {
               await EmailService.sendBudgetAlertEmail(user, category, {
                 spent: totalSpent,
                 budget,
                 percentage: Math.round(percentage),
+                threshold
               });
             }
           }
@@ -65,6 +104,80 @@ class NotificationService {
       return [];
     }
   }
+
+  static async sendWeeklySummary(userId) {
+    try {
+      const settings = await this.getUserNotificationSettings(userId);
+      
+      // Check if weekly summary is enabled
+      if (!settings || !settings.weeklySummary || !settings.emailNotifications) {
+        return false;
+      }
+
+      // Check frequency - only send on the configured day/time
+      const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+      if (settings.alertFrequency === 'weekly' && today !== 1) { // Send on Monday
+        return false;
+      }
+
+      const user = await User.findByPk(userId);
+      const summary = await this.getFinancialSummary(userId, 'week');
+      
+      await EmailService.sendWeeklySummaryEmail(user, summary);
+      return true;
+    } catch (error) {
+      console.error('Error sending weekly summary:', error);
+      return false;
+    }
+  }
+
+  static async sendMonthlyReport(userId) {
+    try {
+      const settings = await this.getUserNotificationSettings(userId);
+      
+      // Check if monthly report is enabled
+      if (!settings || !settings.monthlyReport || !settings.emailNotifications) {
+        return false;
+      }
+
+      const today = new Date().getDate();
+      if (today !== 1) { // Send on the 1st of each month
+        return false;
+      }
+
+      const user = await User.findByPk(userId);
+      const report = await this.getFinancialSummary(userId, 'month');
+      
+      await EmailService.sendMonthlyReportEmail(user, report);
+      return true;
+    } catch (error) {
+      console.error('Error sending monthly report:', error);
+      return false;
+    }
+  }
+
+  static async checkLowBalance(userId, currentBalance) {
+    try {
+      const settings = await this.getUserNotificationSettings(userId);
+      
+      if (!settings || !settings.lowBalanceAlert) {
+        return false;
+      }
+
+      const user = await User.findByPk(userId);
+      const lowBalanceThreshold = 100; // You can make this configurable too
+      
+      if (currentBalance < lowBalanceThreshold) {
+        await EmailService.sendLowBalanceAlert(user, currentBalance);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking low balance:', error);
+      return false;
+    }
+  }
+
 
   static async getFinancialSummary(userId, period = 'week') {
     try {

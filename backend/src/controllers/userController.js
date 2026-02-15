@@ -3,6 +3,8 @@ const { sequelize } = require("../config/db");
 const { User, Category, Budget, Transaction } = require("../models/index");
 const BalanceService = require("../services/balanceService");
 const NotificationService = require("../services/notificationService");
+const fs = require("fs");
+const path = require("path");
 
 class UserController {
   static async getFinancialSummary(req, res, next) {
@@ -82,7 +84,11 @@ class UserController {
           categoryBreakdown,
           transactionCount: transactions.length,
           avgDailySpending,
-          dailyData: await UserController.getDailyData(userId, startDate, endDate)
+          dailyData: await UserController.getDailyData(
+            userId,
+            startDate,
+            endDate
+          )
         }
       });
     } catch (error) {
@@ -360,10 +366,28 @@ class UserController {
       await Budget.destroy({ where: { user_id: userId } });
       await Category.destroy({ where: { user_id: userId } });
 
+      const user = await User.findByPk(userId);
+
+      if (user.profile_picture) {
+        try {
+          const profilePicPath = path.join(
+            __dirname,
+            "../uploads/profile",
+            path.basename(user.profile_picture)
+          );
+          if (fs.existsSync(profilePicPath)) {
+            fs.unlinkSync(profilePicPath);
+          }
+        } catch (fileError) {
+          console.error("Error deleting profile picture:", fileError);
+        }
+      }
+
       //Finally delete the user
       const deleted = await User.destroy({
         where: { id: userId }
       });
+
       if (!deleted) {
         return res.status(404).json({
           success: false,

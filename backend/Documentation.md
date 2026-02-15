@@ -210,7 +210,25 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-#### 6. Get Profile
+#### 6. Reset Password
+**POST** `/auth//resend-verification`
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Verification email resent successfully"
+}
+```
+
+#### 7. Get Profile
 **GET** `/auth/profile`
 
 **Headers:**
@@ -249,7 +267,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-#### 7. Update Profile
+#### 8. Update Profile
 **PUT** `/auth/profile`
 
 **Headers:**
@@ -304,7 +322,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-#### 8. Change Password
+#### 9. Change Password
 **PUT** `/auth/change-password`
 
 **Headers:**
@@ -328,7 +346,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-#### 9. Upload Profile Picture
+#### 10. Upload Profile Picture
 **POST** `/auth/profile/picture`
 
 **Headers:**
@@ -353,7 +371,7 @@ profile_picture: [file]
 }
 ```
 
-#### 10. Remove Profile Picture
+#### 11. Remove Profile Picture
 **DELETE** `/auth/profile/picture`
 
 **Headers:**
@@ -666,6 +684,81 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
+
+### Notification Settings Endpoints
+#### Get Notification Settings
+**GET** `/user/settings/notifications`
+
+**Headers:**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "settings": {
+      "emailNotifications": true,
+      "pushNotifications": true,
+      "budgetAlerts": true,
+      "weeklySummary": true,
+      "monthlyReport": true,
+      "transactionAlerts": true,
+      "lowBalanceAlert": true,
+      "securityAlerts": true,
+      "budgetThreshold": 80,
+      "alertFrequency": "immediate"
+    }
+  }
+}
+```
+#### Update Notification Settings
+**PUT** `/user/settings/notifications`
+
+**Headers:**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Request Body:**
+```json
+{
+  "emailNotifications": true,
+  "pushNotifications": true,
+  "budgetAlerts": true,
+  "weeklySummary": true,
+  "monthlyReport": true,
+  "transactionAlerts": true,
+  "lowBalanceAlert": true,
+  "securityAlerts": true,
+  "budgetThreshold": 80,
+  "alertFrequency": "immediate"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Notification settings updated successfully",
+  "data": {
+    "settings": {
+      "emailNotifications": true,
+      "pushNotifications": true,
+      "budgetAlerts": true,
+      "weeklySummary": true,
+      "monthlyReport": true,
+      "transactionAlerts": true,
+      "lowBalanceAlert": true,
+      "securityAlerts": true,
+      "budgetThreshold": 80,
+      "alertFrequency": "immediate"
+    }
+  }
+}
+```
 
 ### Budgets Endpoints
 

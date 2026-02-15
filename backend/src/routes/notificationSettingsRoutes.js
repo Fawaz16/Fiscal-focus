@@ -1,14 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const UserController = require('../controllers/userController');
 const NotificationSettingsController = require('../controllers/notificationSettingsController');
 const { auth } = require('../middleware/auth');
 
-router.get('/dashboard', auth, UserController.getDashboard);
-router.get('/summary/:period', auth, UserController.getFinancialSummary);
-router.delete('/delete', auth, UserController.deleteUser);
-
-// Notification Settings Routes
 router.get('/settings/notifications', auth, NotificationSettingsController.getSettings);
 router.put('/settings/notifications', auth, NotificationSettingsController.updateSettings);
 

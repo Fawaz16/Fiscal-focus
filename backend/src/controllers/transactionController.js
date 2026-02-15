@@ -5,6 +5,31 @@ const NotificationService = require('../services/notificationService');
 const BalanceService = require('../services/balanceService');
 
 class TransactionController {
+  static calculateNextOccurrence(date, pattern) {
+    if (!date || !pattern) return null;
+    
+    const nextDate = new Date(date);
+    
+    switch (pattern) {
+      case 'daily':
+        nextDate.setDate(nextDate.getDate() + 1);
+        break;
+      case 'weekly':
+        nextDate.setDate(nextDate.getDate() + 7);
+        break;
+      case 'monthly':
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        break;
+      case 'yearly':
+        nextDate.setFullYear(nextDate.getFullYear() + 1);
+        break;
+      default:
+        return null;
+    }
+    
+    return nextDate;
+  }
+
   static async createTransaction(req, res, next) {
     try {
       const {
@@ -35,6 +60,12 @@ class TransactionController {
         }
       });
 
+      // Calculate next occurrence if recurring - use TransactionController.calculateNextOccurrence
+      let nextOccurrence = null;
+      if (is_recurring) {
+        nextOccurrence = TransactionController.calculateNextOccurrence(transactionDate, recurrence_pattern);
+      }
+
       // Create transaction
       const transaction = await Transaction.create({
         amount,
@@ -44,7 +75,7 @@ class TransactionController {
         category_id,
         is_recurring,
         recurrence_pattern,
-        next_occurrence: is_recurring ? this.calculateNextOccurrence(transactionDate, recurrence_pattern) : null,
+        next_occurrence: nextOccurrence,
         location,
         payment_method,
         notes,
@@ -93,6 +124,14 @@ class TransactionController {
       // Store old values for balance calculation
       const oldAmount = transaction.amount;
       const oldType = transaction.type;
+
+      // Recalculate next occurrence if recurring pattern changed
+      if (updates.is_recurring && updates.recurrence_pattern && updates.date) {
+        updates.next_occurrence = TransactionController.calculateNextOccurrence(
+          new Date(updates.date || transaction.date), 
+          updates.recurrence_pattern || transaction.recurrence_pattern
+        );
+      }
 
       // Update transaction
       await transaction.update(updates);
@@ -156,26 +195,6 @@ class TransactionController {
     } catch (error) {
       next(error);
     }
-  }
-
-  static calculateNextOccurrence(date, pattern) {
-    const nextDate = new Date(date);
-    
-    switch (pattern) {
-      case 'daily':
-        nextDate.setDate(nextDate.getDate() + 1);
-        break;
-      case 'weekly':
-        nextDate.setDate(nextDate.getDate() + 7);
-        break;
-      case 'monthly':
-        nextDate.setMonth(nextDate.getMonth() + 1);
-        break;
-      default:
-        return null;
-    }
-    
-    return nextDate;
   }
 
   static async getTransactions(req, res, next) {
@@ -397,7 +416,10 @@ class TransactionController {
           category_id: transaction.category_id,
           is_recurring: true,
           recurrence_pattern: transaction.recurrence_pattern,
-          next_occurrence: this.calculateNextOccurrence(transaction.next_occurrence, transaction.recurrence_pattern),
+          next_occurrence: TransactionController.calculateNextOccurrence(
+            transaction.next_occurrence, 
+            transaction.recurrence_pattern
+          ),
           location: transaction.location,
           payment_method: transaction.payment_method,
           notes: transaction.notes,
