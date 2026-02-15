@@ -113,58 +113,6 @@ const EmailSettings = () => {
           </div>
         )}
 
-        {/* Email Preview */}
-        {emailPreferences.notifications && (
-          <div className="card">
-            <h3 className="font-medium text-gray-900 mb-4">Email Preview</h3>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="border-b pb-4 mb-4">
-                <div className="flex items-center">
-                  <FiBell className="h-5 w-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="font-medium text-gray-900">Budget Alert</p>
-                    <p className="text-sm text-gray-500">From: alerts@fiscalfocus.com</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Food & Dining budget alert</h4>
-                <p className="text-gray-600">
-                  You've spent 85% of your $400 Food & Dining budget this month.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Email Types Info */}
-        <div className="card bg-blue-50 border-blue-200">
-          <h3 className="font-medium text-blue-900 mb-2">Available Email Types</h3>
-          <ul className="text-sm text-blue-700 space-y-2">
-            <li className="flex items-start">
-              <FiCheck className="h-4 w-4 mr-2 mt-0.5 shrink-0" />
-              <span>Welcome Email - Sent after registration</span>
-            </li>
-            <li className="flex items-start">
-              <FiCheck className="h-4 w-4 mr-2 mt-0.5 shrink-0" />
-              <span>Verification Email - Email address verification</span>
-            </li>
-            <li className="flex items-start">
-              <FiCheck className="h-4 w-4 mr-2 mt-0.5 shrink-0" />
-              <span>Password Reset Email - For password recovery</span>
-            </li>
-            <li className="flex items-start">
-              <FiCheck className="h-4 w-4 mr-2 mt-0.5 shrink-0" />
-              <span>Budget Alert Email - When spending reaches 80% of budget</span>
-            </li>
-            <li className="flex items-start">
-              <FiCheck className="h-4 w-4 mr-2 mt-0.5 shrink-0" />
-              <span>Weekly Summary Email - Weekly financial summary</span>
-            </li>
-          </ul>
-        </div>
-
         {/* Action Button */}
         <div className="flex justify-end">
           <button

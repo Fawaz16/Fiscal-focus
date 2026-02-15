@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { FiDollarSign, FiCalendar, FiTag, FiMapPin, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
+import { FiCalendar, FiTag, FiMapPin, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
 import { format } from 'date-fns';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const CreateTransaction = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+  const { formatAmount } = useCurrency();
 
   // Check URL for duplicate parameter
   const queryParams = new URLSearchParams(location.search);
@@ -43,28 +45,28 @@ const CreateTransaction = () => {
   const fetchTransaction = async () => {
     try {
       const response = await api.get(`/transactions/${transactionId}`);
-      if (response.data.success) {
-        const transaction = response.data.data.transaction;
+      if (response.data?.success) {
+        const transaction = response.data.data?.transaction;
         
         // For duplicate mode: use today's date
         // For edit mode: use original date
         const transactionDate = isDuplicateMode ? 
           new Date() : // Today's date for duplicates
-          new Date(transaction.date); // Original date for edits
+          (transaction?.date ? new Date(transaction.date) : new Date()); // Original date for edits
         
         const formattedDate = format(transactionDate, 'yyyy-MM-dd');
 
         setFormData({
-          amount: transaction.amount?.toString() || '',
-          type: transaction.type || 'expense',
-          description: transaction.description || '',
+          amount: transaction?.amount?.toString() || '',
+          type: transaction?.type || 'expense',
+          description: transaction?.description || '',
           date: formattedDate,
-          category_id: transaction.category_id || '',
-          is_recurring: transaction.is_recurring || false,
-          recurrence_pattern: transaction.recurrence_pattern || '',
-          location: transaction.location || '',
-          payment_method: transaction.payment_method || '',
-          notes: transaction.notes || '',
+          category_id: transaction?.category_id || '',
+          is_recurring: transaction?.is_recurring || false,
+          recurrence_pattern: transaction?.recurrence_pattern || '',
+          location: transaction?.location || '',
+          payment_method: transaction?.payment_method || '',
+          notes: transaction?.notes || '',
         });
       }
     } catch (error) {
@@ -79,8 +81,8 @@ const CreateTransaction = () => {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/categories');
-      if (response.data.success) {
-        setCategories(response.data.data.categories);
+      if (response.data?.success) {
+        setCategories(response.data.data?.categories ?? []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -139,8 +141,6 @@ const CreateTransaction = () => {
         transactionData.recurrence_pattern = formData.recurrence_pattern;
       }
       
-      console.log('Sending transaction data:', JSON.stringify(transactionData, null, 2));
-      
       let response;
       
       if (isEditMode) {
@@ -149,7 +149,7 @@ const CreateTransaction = () => {
         response = await api.post('/transactions', transactionData);
       }
       
-      if (response.data.success) {
+      if (response.data?.success) {
         const successMessage = isEditMode 
           ? 'Transaction updated successfully' 
           : isDuplicateMode 
@@ -160,8 +160,7 @@ const CreateTransaction = () => {
         navigate('/transactions');
       }
     } catch (error) {
-      console.error('Full error object:', error);
-      console.error('Error response data:', error.response?.data);
+      console.error('Error creating transaction:', error);
       
       if (error.response?.data?.errors) {
         const errorMessages = error.response.data.errors.map(err => err.msg).join(', ');
@@ -230,28 +229,27 @@ const CreateTransaction = () => {
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Amount */}
+            {/* Amount - No FiDollarSign icon */}
             <div>
               <label className="label">
-                <div className="flex items-center">
-                  <FiDollarSign className="h-4 w-4 mr-2 text-gray-400" />
-                  Amount *
-                </div>
+                Amount *
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
                 <input
                   type="number"
                   name="amount"
                   value={formData.amount}
                   onChange={handleChange}
-                  className="input-field pl-7"
+                  className="input-field"
                   placeholder="0.00"
                   step="0.01"
                   min="0"
                   required
                 />
               </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Enter the transaction amount
+              </p>
             </div>
 
             {/* Type */}
@@ -261,20 +259,22 @@ const CreateTransaction = () => {
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
-                  className={`flex-1 py-2 rounded-lg border ${formData.type === 'expense'
+                  className={`flex-1 py-2 rounded-lg border ${
+                    formData.type === 'expense'
                       ? 'border-red-300 bg-red-50 text-red-700'
                       : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
+                  }`}
                 >
                   Expense
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
-                  className={`flex-1 py-2 rounded-lg border ${formData.type === 'income'
+                  className={`flex-1 py-2 rounded-lg border ${
+                    formData.type === 'income'
                       ? 'border-green-300 bg-green-50 text-green-700'
                       : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
+                  }`}
                 >
                   Income
                 </button>
@@ -330,8 +330,8 @@ const CreateTransaction = () => {
               >
                 <option value="">Select a category</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
+                  <option key={category?.id} value={category?.id}>
+                    {category?.name}
                   </option>
                 ))}
               </select>
@@ -430,6 +430,17 @@ const CreateTransaction = () => {
               />
             </div>
           </div>
+
+          {/* Amount Preview - Show formatted amount for context */}
+          {formData.amount && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Amount will be formatted as: <span className="font-semibold text-gray-900">
+                  {formData.type === 'income' ? '+' : '-'}{formatAmount(parseFloat(formData.amount) || 0)}
+                </span>
+              </p>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 mt-8 pt-6 border-t">

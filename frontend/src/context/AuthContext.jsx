@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import api, { getProfilePictureUrl } from '../services/api';
 
 const AuthContext = createContext({});
 
@@ -16,7 +16,12 @@ export const AuthProvider = ({ children }) => {
     
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        // Ensure profile picture has full URL
+        if (parsedUser.profile_picture) {
+          parsedUser.profile_picture = getProfilePictureUrl(parsedUser.profile_picture);
+        }
+        setUser(parsedUser);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } catch (error) {
         console.error('Error parsing user data:', error);
@@ -32,7 +37,12 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/login', { email, password });
       
       if (response.data.success) {
-        const { user, token } = response.data.data;
+        let { user, token } = response.data.data;
+        
+        // Convert profile picture to full URL
+        if (user.profile_picture) {
+          user.profile_picture = getProfilePictureUrl(user.profile_picture);
+        }
         
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
@@ -80,7 +90,13 @@ export const AuthProvider = ({ children }) => {
       const response = await api.put('/auth/profile', profileData);
       
       if (response.data.success) {
-        const updatedUser = response.data.data.user;
+        let updatedUser = response.data.data.user;
+        
+        // Convert profile picture to full URL
+        if (updatedUser.profile_picture) {
+          updatedUser.profile_picture = getProfilePictureUrl(updatedUser.profile_picture);
+        }
+        
         localStorage.setItem('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
         toast.success('Profile updated successfully');
@@ -155,9 +171,10 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data.success) {
         const userData = JSON.parse(localStorage.getItem('user'));
-        userData.profile_picture = response.data.data.profile_picture;
+        // Convert profile picture to full URL
+        userData.profile_picture = getProfilePictureUrl(response.data.data.profile_picture);
         localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
+        setUser({ ...userData });
         toast.success('Profile picture updated');
         return { success: true };
       }
@@ -180,6 +197,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     uploadProfilePicture,
     isAuthenticated: !!user,
+    getProfilePictureUrl, // Export helper for components
   };
 
   return (

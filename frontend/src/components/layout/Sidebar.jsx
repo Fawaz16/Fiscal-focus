@@ -90,9 +90,8 @@ const Sidebar = () => {
 
   // Get current section for sidebar accent
   const currentSection = getActiveSection(location.pathname);
-  const sidebarAccentColor = currentSection 
-    ? sectionColors[currentSection].split(' ')[0].replace('bg-', '') 
-    : 'primary';
+  // Use primary color as default instead of dynamic Tailwind class
+  const sidebarAccentColor = 'primary'; // Fixed to primary color
 
   return (
     <>
@@ -117,40 +116,43 @@ const Sidebar = () => {
         fixed inset-y-0 left-0 z-40 w-64 transform bg-white shadow-xl 
         transition-transform duration-300 ease-in-out lg:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        border-r-2 border-${sidebarAccentColor}-100
+        border-r-2 border-primary-100
       `}>
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className={`flex h-16 shrink-0 items-center px-6 border-b border-${sidebarAccentColor}-50`}>
+          <div className="flex h-16 shrink-0 items-center px-6 border-b border-primary-50">
             <div className="flex items-center">
-              <div className={`h-8 w-8 rounded-lg bg-${sidebarAccentColor}-600 flex items-center justify-center`}>
+              {/* <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
                 <FiDollarSign className="h-5 w-5 text-white" />
-              </div>
+              </div> */}
               <span className="ml-3 text-xl font-bold text-gray-900">
                 Fiscal Focus
               </span>
             </div>
           </div>
 
-          {/* User profile */}
-          <div className={`border-b border-${sidebarAccentColor}-50 px-6 py-4`}>
-            <div className="flex items-center">
-              <div className={`h-10 w-10 rounded-full bg-${sidebarAccentColor}-100 flex items-center justify-center`}>
+          {/* User profile - Fixed overflow issue */}
+          <div className="border-b border-primary-50 px-6 py-4">
+            <div className="flex items-center min-w-0">
+              <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
                 {user?.profile_picture ? (
                   <img
                     src={user.profile_picture}
                     alt={user.name}
                     className="h-10 w-10 rounded-full"
+                    loading='eager'
                   />
                 ) : (
-                  <span className={`text-${sidebarAccentColor}-600 font-semibold`}>
+                  <span className="text-primary-600 font-semibold">
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500">{user?.email}</p>
+              <div className="ml-3 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+                <p className="text-xs text-gray-500 truncate" title={user?.email}>
+                  {user?.email}
+                </p>
               </div>
             </div>
           </div>
@@ -162,13 +164,6 @@ const Sidebar = () => {
             ))}
           </nav>
 
-          {/* Current page indicator */}
-          <div className="px-4 py-2">
-            <div className={`text-xs px-3 py-1 rounded-full bg-${sidebarAccentColor}-50 text-${sidebarAccentColor}-700 font-medium inline-flex items-center`}>
-              <span className={`h-2 w-2 rounded-full bg-${sidebarAccentColor}-500 mr-2`}></span>
-              {navigation.find(item => getActiveSection(location.pathname) === item.href)?.name || 'Dashboard'}
-            </div>
-          </div>
 
           {/* Footer */}
           <div className="border-t p-4">

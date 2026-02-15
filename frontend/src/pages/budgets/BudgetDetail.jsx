@@ -4,13 +4,16 @@ import { FiArrowLeft, FiEdit, FiTrash2, FiTrendingUp, FiTrendingDown, FiPieChart
 import { format } from 'date-fns';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const BudgetDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currency, formatAmount } = useCurrency();
   const [budget, setBudget] = useState(null);
   const [loading, setLoading] = useState(true);
   const [categorySpending, setCategorySpending] = useState([]);
+  const [error, setError] = useState(null);
 
   // Safe date formatting helper
   const safeFormat = (dateString, formatStr) => {
@@ -34,13 +37,18 @@ const BudgetDetail = () => {
 
   const fetchBudgetDetails = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const response = await api.get(`/budgets/${id}`);
       
       if (response.data.success) {
         setBudget(response.data.data.budget);
-        setCategorySpending(response.data.data.categorySpending || []);
+        setCategorySpending(response.data.data.categorySpending ?? []);
       }
     } catch (error) {
+      console.error('Error fetching budget:', error);
+      setError('Budget not found');
       toast.error('Budget not found');
       navigate('/budgets');
     } finally {
@@ -49,36 +57,58 @@ const BudgetDetail = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this budget?')) return;
+    if (!window.confirm('Are you sure you want to delete this budget? This action cannot be undone.')) return;
     
     try {
       const response = await api.delete(`/budgets/${id}`);
-      if (response.data.success) {
-        toast.success('Budget deleted');
+      if (response.data?.success) {
+        toast.success('Budget deleted successfully');
         navigate('/budgets');
       }
     } catch (error) {
-      toast.error('Delete failed');
+      console.error('Error deleting budget:', error);
+      toast.error('Failed to delete budget');
     }
   };
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-6 w-full h-100 flex items-center justify-center">
-        <div className="flex items-center justify-center">
-          Loading Budget Details...
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading budget details...</p>
         </div>
       </div>
     );
   }
 
-  if (!budget) return null;
+  if (error || !budget) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="card text-center py-12">
+          <div className="mx-auto h-12 w-12 text-red-500">
+            <FiPieChart className="h-12 w-12" />
+          </div>
+          <h3 className="mt-4 text-lg font-medium text-gray-900">Budget Not Found</h3>
+          <p className="mt-2 text-gray-500">The budget you're looking for doesn't exist or has been deleted.</p>
+          <div className="mt-6">
+            <Link to="/budgets" className="btn-primary">
+              Back to Budgets
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const progress = (budget.total_spent / budget.total_budget) * 100;
-  const remaining = budget.total_budget - budget.total_spent;
-  const savingsRate = budget.total_income > 0 
-    ? ((budget.savings / budget.total_income) * 100) 
-    : 0;
+  const totalBudget = budget.total_budget ?? 0;
+  const totalSpent = budget.total_spent ?? 0;
+  const totalIncome = budget.total_income ?? 0;
+  const savings = budget.savings ?? 0;
+  
+  const progress = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const remaining = totalBudget - totalSpent;
+  const savingsRate = totalIncome > 0 ? ((savings / totalIncome) * 100) : 0;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -91,7 +121,7 @@ const BudgetDetail = () => {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {getMonthName(budget.month)} {budget.year} Budget
+                {getMonthName(budget.month)} {budget.year ?? ''} Budget
               </h1>
               <p className="text-gray-600 mt-1">
                 Created {safeFormat(budget.createdAt, 'MMM d, yyyy')}
@@ -130,7 +160,7 @@ const BudgetDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Total Budget</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${budget.total_budget.toFixed(2)}
+                    {formatAmount(totalBudget)}
                   </p>
                 </div>
                 <FiPieChart className="h-8 w-8 text-blue-500" />
@@ -142,7 +172,7 @@ const BudgetDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Total Spent</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${budget.total_spent.toFixed(2)}
+                    {formatAmount(totalSpent)}
                   </p>
                 </div>
                 <FiTrendingDown className="h-8 w-8 text-red-500" />
@@ -154,7 +184,7 @@ const BudgetDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Remaining</p>
                   <p className="text-2xl font-bold text-green-600">
-                    ${remaining.toFixed(2)}
+                    {formatAmount(remaining)}
                   </p>
                 </div>
                 <FiTrendingUp className="h-8 w-8 text-green-500" />
@@ -169,7 +199,7 @@ const BudgetDetail = () => {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">
-                    ${budget.total_spent.toFixed(2)} of ${budget.total_budget.toFixed(2)} spent
+                    {formatAmount(totalSpent)} of {formatAmount(totalBudget)} spent
                   </span>
                   <span className="text-gray-600">{progress.toFixed(1)}%</span>
                 </div>
@@ -192,17 +222,20 @@ const BudgetDetail = () => {
             <div className="space-y-4">
               {categorySpending.length > 0 ? (
                 categorySpending.map((item) => {
-                  const categoryBudget = item.Category?.monthly_budget || 1;
-                  const catProgress = (item.total_spent / categoryBudget) * 100;
+                  const categoryBudget = item.Category?.monthly_budget ?? 1;
+                  const spent = item.total_spent ?? 0;
+                  const catProgress = categoryBudget > 0 ? (spent / categoryBudget) * 100 : 0;
+                  const remaining = categoryBudget - spent;
+                  
                   return (
                     <div key={item.category_id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center">
                           <div 
                             className="h-3 w-3 rounded-full mr-3"
-                            style={{ backgroundColor: item.Category?.color }}
+                            style={{ backgroundColor: item.Category?.color ?? '#6B7280' }}
                           />
-                          <span className="font-medium">{item.Category?.name}</span>
+                          <span className="font-medium">{item.Category?.name ?? 'Unknown Category'}</span>
                         </div>
                         <span className={`badge ${
                           catProgress > 90 ? 'badge-danger' :
@@ -213,10 +246,10 @@ const BudgetDetail = () => {
                       </div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">
-                          ${item.total_spent?.toFixed(2)} / ${categoryBudget.toFixed(2)}
+                          {formatAmount(spent)} / {formatAmount(categoryBudget)}
                         </span>
                         <span className="text-gray-600">
-                          ${(categoryBudget - item.total_spent).toFixed(2)} remaining
+                          {formatAmount(remaining)} remaining
                         </span>
                       </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -247,13 +280,13 @@ const BudgetDetail = () => {
               <div>
                 <p className="text-sm text-gray-600">Total Income</p>
                 <p className="text-xl font-bold text-gray-900">
-                  ${budget.total_income.toFixed(2)}
+                  {formatAmount(totalIncome)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Savings</p>
                 <p className="text-xl font-bold text-green-600">
-                  +${budget.savings.toFixed(2)}
+                  {formatAmount(savings)}
                 </p>
               </div>
               <div>
@@ -276,15 +309,15 @@ const BudgetDetail = () => {
                   className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
                 >
                   <div>
-                    <p className="font-medium text-gray-900">{transaction.description}</p>
+                    <p className="font-medium text-gray-900">{transaction.description ?? 'Untitled'}</p>
                     <p className="text-sm text-gray-500">
-                      {transaction.Category?.name} • {safeFormat(transaction.date, 'MMM d')}
+                      {transaction.Category?.name ?? 'Uncategorized'} • {safeFormat(transaction.date, 'MMM d')}
                     </p>
                   </div>
                   <span className={`font-semibold ${
                     transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    ${transaction.amount.toFixed(2)}
+                    {formatAmount(transaction.amount ?? 0)}
                   </span>
                 </Link>
               ))}
@@ -306,12 +339,12 @@ const BudgetDetail = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Daily Average</span>
                 <span className="font-medium">
-                  ${new Date().getDate() > 0 ? (budget.total_spent / new Date().getDate()).toFixed(2) : '0.00'}
+                  {formatAmount(new Date().getDate() > 0 ? (totalSpent / new Date().getDate()) : 0)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Transactions</span>
-                <span className="font-medium">{budget.Transactions?.length || 0}</span>
+                <span className="font-medium">{budget.Transactions?.length ?? 0}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Updated</span>

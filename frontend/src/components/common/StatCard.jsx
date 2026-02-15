@@ -6,7 +6,7 @@ const StatCard = ({ title, value, icon: Icon, trend = 'up', change = '0%', color
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-800">{value}</p>
         </div>
         <div className={`p-3 rounded-lg ${iconColor.replace('text', 'bg').replace('-600', '-100')}`}>
           <Icon className="h-6 w-6" />

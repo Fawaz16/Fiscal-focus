@@ -3,70 +3,116 @@ import { Link } from 'react-router-dom';
 import { FiPlus, FiFilter, FiPieChart, FiEdit, FiTrash2 } from 'react-icons/fi';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const Categories = () => {
+  const { currency, formatAmount } = useCurrency();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     has_budget: '',
   });
 
   useEffect(() => {
-    fetchCategories();
-    fetchStats();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        await Promise.all([
+          fetchCategories(),
+          fetchStats()
+        ]);
+      } catch (err) {
+        setError('Failed to load categories. Please try again.');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [filters]);
 
   const fetchCategories = async () => {
     try {
-      setLoading(true);
       const response = await api.get('/categories', { params: filters });
-      if (response.data.success) {
-        setCategories(response.data.data.categories);
+      if (response.data?.success) {
+        setCategories(response.data.data.categories ?? []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
   const fetchStats = async () => {
     try {
       const response = await api.get('/categories/stats/month');
-      if (response.data.success) {
+      if (response.data?.success) {
         setStats(response.data.data);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // Don't throw error for stats - non-critical
     }
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete category "${name}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete category "${name}"? This action cannot be undone.`)) return;
     
     try {
       const response = await api.delete(`/categories/${id}`);
-      if (response.data.success) {
-        toast.success('Category deleted');
+      if (response.data?.success) {
+        toast.success('Category deleted successfully');
         fetchCategories();
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Delete failed');
+      console.error('Error deleting category:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete category');
     }
   };
 
-  const getSpentPercentage = (spent, budget) => {
+  const getSpentPercentage = (spent = 0, budget = 0) => {
     if (!budget || budget === 0) return 0;
     return Math.min((spent / budget) * 100, 100);
   };
 
-  const getStatusColor = (percentage) => {
+  const getStatusColor = (percentage = 0) => {
     if (percentage > 100) return 'text-red-600 bg-red-50';
     if (percentage > 80) return 'text-yellow-600 bg-yellow-50';
     return 'text-green-600 bg-green-50';
   };
+
+  const getProgressBarColor = (percentage = 0) => {
+    if (percentage > 100) return 'bg-red-500';
+    if (percentage > 80) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
+  const clearFilters = () => {
+    setFilters({ search: '', has_budget: '' });
+  };
+
+  if (error) {
+    return (
+      <div className="card text-center py-12">
+        <div className="mx-auto h-12 w-12 text-red-500">
+          <FiPieChart className="h-12 w-12" />
+        </div>
+        <h3 className="mt-4 text-lg font-medium text-gray-900">Something went wrong</h3>
+        <p className="mt-2 text-gray-500">{error}</p>
+        <div className="mt-6">
+          <button onClick={clearFilters} className="btn-primary">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -90,34 +136,40 @@ const Categories = () => {
       </div>
 
       {/* Stats */}
-      {stats && (
+      {stats?.categories?.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {stats.categories.slice(0, 3).map((category) => (
-            <div key={category.category} className="card">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div 
-                    className="h-10 w-10 rounded-lg flex items-center justify-center mr-4"
-                    style={{ backgroundColor: category.color + '20' }}
-                  >
+          {stats.categories.slice(0, 3).map((category) => {
+            const spent = category.spent ?? 0;
+            const budget = category.budget ?? 0;
+            const percentage = category.percentage ?? 0;
+            
+            return (
+              <div key={category.category} className="card">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
                     <div 
-                      className="h-6 w-6 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
+                      className="h-10 w-10 rounded-lg flex items-center justify-center mr-4"
+                      style={{ backgroundColor: (category.color ?? '#6B7280') + '20' }}
+                    >
+                      <div 
+                        className="h-6 w-6 rounded-full"
+                        style={{ backgroundColor: category.color ?? '#6B7280' }}
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{category.category ?? 'Unknown'}</p>
+                      <p className="text-sm text-gray-500">
+                        {formatAmount(spent)} of {formatAmount(budget)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{category.category}</p>
-                    <p className="text-sm text-gray-500">
-                      ${category.spent} of ${category.budget}
-                    </p>
-                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(percentage)}`}>
+                    {percentage.toFixed(1)}%
+                  </span>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(category.percentage)}`}>
-                  {category.percentage}%
-                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -148,7 +200,7 @@ const Categories = () => {
           </div>
           <div className="flex items-end">
             <button
-              onClick={() => setFilters({ search: '', has_budget: '' })}
+              onClick={clearFilters}
               className="btn-secondary w-full"
             >
               <FiFilter className="mr-2 h-4 w-4" />
@@ -160,11 +212,12 @@ const Categories = () => {
 
       {/* Categories Grid */}
       {loading ? (
-      <div className="animate-pulse space-y-6 w-full h-100 flex items-center justify-center">
-        <div className="flex items-center justify-center">
-          Loading Categories...
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading categories...</p>
+          </div>
         </div>
-      </div>
       ) : categories.length === 0 ? (
         <div className="card text-center py-12">
           <div className="mx-auto h-12 w-12 text-gray-400">
@@ -181,9 +234,10 @@ const Categories = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => {
-            // For demo, calculate random spent amount
-            const spent = category.monthly_budget ? (category.monthly_budget * Math.random()) : 0;
-            const percentage = getSpentPercentage(spent, category.monthly_budget);
+            // For demo, calculate random spent amount - this should ideally come from real data
+            const monthlyBudget = category.monthly_budget ?? 0;
+            const spent = monthlyBudget > 0 ? (monthlyBudget * Math.random()) : 0;
+            const percentage = getSpentPercentage(spent, monthlyBudget);
             
             return (
               <div key={category.id} className="card hover:shadow-lg transition-shadow">
@@ -191,15 +245,15 @@ const Categories = () => {
                   <div className="flex items-center">
                     <div 
                       className="h-10 w-10 rounded-lg flex items-center justify-center mr-3"
-                      style={{ backgroundColor: category.color + '20' }}
+                      style={{ backgroundColor: (category.color ?? '#6B7280') + '20' }}
                     >
                       <div 
                         className="h-6 w-6 rounded-full"
-                        style={{ backgroundColor: category.color }}
+                        style={{ backgroundColor: category.color ?? '#6B7280' }}
                       />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{category.name}</h3>
+                      <h3 className="font-semibold text-gray-900">{category.name ?? 'Unnamed'}</h3>
                       {category.is_default && (
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
                           Default
@@ -229,12 +283,12 @@ const Categories = () => {
                   <p className="text-sm text-gray-600 mb-4">{category.description}</p>
                 )}
 
-                {category.monthly_budget ? (
+                {monthlyBudget > 0 ? (
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">
-                          ${spent.toFixed(2)} of ${category.monthly_budget.toFixed(2)}
+                          {formatAmount(spent)} of {formatAmount(monthlyBudget)}
                         </span>
                         <span className={`font-medium ${getStatusColor(percentage).split(' ')[0]}`}>
                           {percentage.toFixed(0)}%
@@ -242,10 +296,7 @@ const Categories = () => {
                       </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full ${
-                            percentage > 100 ? 'bg-red-500' :
-                            percentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}
+                          className={`h-full ${getProgressBarColor(percentage)}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -254,20 +305,23 @@ const Categories = () => {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600">Budget</p>
-                        <p className="font-medium">${category.monthly_budget.toFixed(2)}</p>
+                        <p className="font-medium">{formatAmount(monthlyBudget)}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Threshold</p>
-                        <p className="font-medium">{category.budget_threshold || 80}%</p>
+                        <p className="font-medium">{category.budget_threshold ?? 80}%</p>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-4">
                     <p className="text-gray-500 text-sm">No budget set</p>
-                    <button className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2">
+                    <Link
+                      to={`/categories/edit/${category.id}`}
+                      className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2 inline-block"
+                    >
                       Set Budget
-                    </button>
+                    </Link>
                   </div>
                 )}
 

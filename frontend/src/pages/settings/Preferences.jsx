@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiGlobe, FiMoon, FiSun, FiBell } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext'; // Import this
 import toast from 'react-hot-toast';
 
 const Preferences = () => {
   const { user, updateProfile } = useAuth();
+  const { theme: currentTheme, setTheme } = useTheme(); // Add this
   const [loading, setLoading] = useState(false);
   
   // Only settings that match backend user.settings structure
   const [preferences, setPreferences] = useState({
-    theme: user?.settings?.theme || 'light',
+    theme: user?.settings?.theme || currentTheme || 'light',
     language: user?.settings?.language || 'en',
     notifications: user?.settings?.notifications ?? true,
     profile_visibility: user?.settings?.profile_visibility || 'private',
   });
+
+  // Sync with context theme when it changes
+  useEffect(() => {
+    setPreferences(prev => ({
+      ...prev,
+      theme: currentTheme
+    }));
+  }, [currentTheme]);
 
   const themes = [
     { value: 'light', label: 'Light', icon: FiSun },
@@ -21,16 +31,20 @@ const Preferences = () => {
   ];
 
   const languages = [
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Español' },
-    { code: 'fr', name: 'Français' },
+    { code: 'en', name: 'English' }
   ];
 
-  const visibilityOptions = [
-    { value: 'private', label: 'Private' },
-    { value: 'public', label: 'Public' },
-    { value: 'friends', label: 'Friends Only' },
-  ];
+  const handlePreferenceChange = (key, value) => {
+    setPreferences(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+
+    // Immediately change theme when theme button is clicked
+    if (key === 'theme') {
+      setTheme(value); // This updates the context, localStorage, and document class
+    }
+  };
 
   const handleSavePreferences = async () => {
     setLoading(true);
@@ -56,40 +70,42 @@ const Preferences = () => {
     }
   };
 
-  const handlePreferenceChange = (key, value) => {
-    setPreferences(prev => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Preferences</h2>
-        <p className="text-gray-600">Customize your application experience</p>
+        <h2 className="text-lg font-semibold" style={{ color: 'var(--color-gray-900)' }}>
+          Preferences
+        </h2>
+        <p style={{ color: 'var(--color-gray-500)' }}>
+          Customize your application experience
+        </p>
       </div>
 
       <div className="space-y-6">
         {/* Theme */}
         <div className="card">
-          <h3 className="font-medium text-gray-900 mb-4">Appearance</h3>
+          <h3 className="font-medium mb-4" style={{ color: 'var(--color-gray-900)' }}>
+            Appearance
+          </h3>
           <div className="space-y-4">
             <div>
               <label className="label">Theme</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {themes.map((themeOption) => {
                   const Icon = themeOption.icon;
+                  const isActive = preferences.theme === themeOption.value;
+                  
                   return (
                     <button
                       key={themeOption.value}
                       type="button"
                       onClick={() => handlePreferenceChange('theme', themeOption.value)}
-                      className={`flex flex-col items-center p-4 rounded-lg border ${
-                        preferences.theme === themeOption.value
-                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className="flex flex-col items-center p-4 rounded-lg border transition-all"
+                      style={{
+                        borderColor: isActive ? 'var(--color-primary-500)' : 'var(--color-gray-300)',
+                        backgroundColor: isActive ? 'var(--color-primary-50)' : 'transparent',
+                        color: isActive ? 'var(--color-primary-700)' : 'var(--color-gray-700)'
+                      }}
                     >
                       <Icon className="h-6 w-6 mb-2" />
                       <span className="text-sm font-medium">{themeOption.label}</span>
@@ -103,12 +119,14 @@ const Preferences = () => {
 
         {/* Language & Notifications */}
         <div className="card">
-          <h3 className="font-medium text-gray-900 mb-4">Language & Notifications</h3>
+          <h3 className="font-medium mb-4" style={{ color: 'var(--color-gray-900)' }}>
+            Language & Notifications
+          </h3>
           <div className="space-y-4">
             <div>
               <label className="label">
                 <div className="flex items-center">
-                  <FiGlobe className="h-4 w-4 mr-2 text-gray-400" />
+                  <FiGlobe className="h-4 w-4 mr-2" style={{ color: 'var(--color-gray-400)' }} />
                   Language
                 </div>
               </label>
@@ -116,6 +134,11 @@ const Preferences = () => {
                 value={preferences.language}
                 onChange={(e) => handlePreferenceChange('language', e.target.value)}
                 className="input-field"
+                style={{
+                  backgroundColor: 'var(--color-white)',
+                  color: 'var(--color-gray-900)',
+                  borderColor: 'var(--color-gray-300)'
+                }}
               >
                 {languages.map((lang) => (
                   <option key={lang.code} value={lang.code}>
@@ -129,51 +152,30 @@ const Preferences = () => {
               <label className="label">Notifications</label>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <FiBell className="h-4 w-4 text-gray-400 mr-2" />
-                  <span className="text-gray-700">Receive email notifications</span>
+                  <FiBell className="h-4 w-4 mr-2" style={{ color: 'var(--color-gray-400)' }} />
+                  <span style={{ color: 'var(--color-gray-700)' }}>
+                    Receive email notifications
+                  </span>
                 </div>
                 <button
                   onClick={() => handlePreferenceChange('notifications', !preferences.notifications)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                    preferences.notifications ? 'bg-primary-500' : 'bg-gray-300'
-                  }`}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                  style={{
+                    backgroundColor: preferences.notifications 
+                      ? 'var(--color-primary-500)' 
+                      : 'var(--color-gray-300)'
+                  }}
                 >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    preferences.notifications ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{
+                      transform: preferences.notifications ? 'translateX(1.5rem)' : 'translateX(0.25rem)'
+                    }}
+                  />
                 </button>
               </div>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm mt-1" style={{ color: 'var(--color-gray-500)' }}>
                 Budget alerts and weekly summaries
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Visibility */}
-        <div className="card">
-          <h3 className="font-medium text-gray-900 mb-4">Privacy</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="label">Profile Visibility</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                {visibilityOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handlePreferenceChange('profile_visibility', option.value)}
-                    className={`py-2 rounded-lg border text-sm ${
-                      preferences.profile_visibility === option.value
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                Controls who can see your financial statistics
               </p>
             </div>
           </div>

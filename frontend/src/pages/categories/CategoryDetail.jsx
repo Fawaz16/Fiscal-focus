@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiArrowLeft, FiEdit, FiTrash2, FiTrendingUp, FiTrendingDown, FiCalendar } from 'react-icons/fi';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const CategoryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currency, formatAmount } = useCurrency();
   const [category, setCategory] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchCategoryDetails();
@@ -19,14 +22,18 @@ const CategoryDetail = () => {
 
   const fetchCategoryDetails = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const response = await api.get(`/categories/${id}`);
-      if (response.data.success) {
+      if (response.data?.success) {
         setCategory(response.data.data.category);
-        setTransactions(response.data.data.spending?.transactions || []);
-        setStats(response.data.data.spending || {});
+        setTransactions(response.data.data.spending?.transactions ?? []);
+        setStats(response.data.data.spending ?? {});
       }
     } catch (error) {
       console.error('Error fetching category:', error);
+      setError('Category not found');
       toast.error('Category not found');
       navigate('/categories');
     } finally {
@@ -35,33 +42,70 @@ const CategoryDetail = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this category?')) return;
+    if (!window.confirm(`Are you sure you want to delete category "${category?.name}"? This action cannot be undone.`)) return;
     
     try {
       const response = await api.delete(`/categories/${id}`);
-      if (response.data.success) {
-        toast.success('Category deleted');
+      if (response.data?.success) {
+        toast.success('Category deleted successfully');
         navigate('/categories');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Delete failed');
+      console.error('Error deleting category:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete category');
+    }
+  };
+
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(category?.id);
+      toast.success('Category ID copied to clipboard');
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      toast.error('Failed to copy category ID');
     }
   };
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-6 w-full h-100 flex items-center justify-center">
-        <div className="flex items-center justify-center">
-          Loading Category Details...
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading category details...</p>
         </div>
       </div>
     );
   }
 
-  if (!category) return null;
+  if (error || !category) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="card text-center py-12">
+          <div className="mx-auto h-12 w-12 text-red-500">
+            <FiCalendar className="h-12 w-12" />
+          </div>
+          <h3 className="mt-4 text-lg font-medium text-gray-900">Category Not Found</h3>
+          <p className="mt-2 text-gray-500">The category you're looking for doesn't exist or has been deleted.</p>
+          <div className="mt-6">
+            <Link to="/categories" className="btn-primary">
+              Back to Categories
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const spentPercentage = category.monthly_budget 
-    ? ((stats?.total || 0) / category.monthly_budget) * 100 
+  const monthlyBudget = category.monthly_budget ?? 0;
+  const totalSpent = stats?.total ?? 0;
+  const transactionCount = stats?.count ?? 0;
+  
+  const spentPercentage = monthlyBudget > 0 
+    ? (totalSpent / monthlyBudget) * 100 
+    : 0;
+
+  const averageTransaction = transactionCount > 0 
+    ? totalSpent / transactionCount 
     : 0;
 
   return (
@@ -76,15 +120,15 @@ const CategoryDetail = () => {
             <div className="flex items-center">
               <div 
                 className="h-10 w-10 rounded-lg flex items-center justify-center mr-4"
-                style={{ backgroundColor: category.color + '20' }}
+                style={{ backgroundColor: (category.color ?? '#6B7280') + '20' }}
               >
                 <div 
                   className="h-6 w-6 rounded-full"
-                  style={{ backgroundColor: category.color }}
+                  style={{ backgroundColor: category.color ?? '#6B7280' }}
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{category.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{category.name ?? 'Unnamed Category'}</h1>
                 {category.description && (
                   <p className="text-gray-600 mt-1">{category.description}</p>
                 )}
@@ -124,7 +168,7 @@ const CategoryDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Total Spent</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${(stats?.total || 0).toFixed(2)}
+                    {formatAmount(totalSpent)}
                   </p>
                 </div>
                 <FiTrendingDown className="h-8 w-8 text-red-500" />
@@ -136,7 +180,7 @@ const CategoryDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Monthly Budget</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${category.monthly_budget?.toFixed(2) || '0.00'}
+                    {monthlyBudget > 0 ? formatAmount(monthlyBudget) : `${currency.symbol}0`}
                   </p>
                 </div>
                 <FiCalendar className="h-8 w-8 text-blue-500" />
@@ -160,14 +204,14 @@ const CategoryDetail = () => {
           </div>
 
           {/* Budget Progress */}
-          {category.monthly_budget && (
+          {monthlyBudget > 0 && (
             <div className="card mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Budget Progress</h3>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">
-                      ${(stats?.total || 0).toFixed(2)} of ${category.monthly_budget.toFixed(2)} spent
+                      {formatAmount(totalSpent)} of {formatAmount(monthlyBudget)} spent
                     </span>
                     <span className="text-gray-600">{spentPercentage.toFixed(1)}%</span>
                   </div>
@@ -217,18 +261,18 @@ const CategoryDetail = () => {
                     className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg border"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">{transaction.description}</p>
+                      <p className="font-medium text-gray-900">{transaction.description ?? 'Untitled'}</p>
                       <p className="text-sm text-gray-500">
-                        {format(new Date(transaction.date), 'MMM d, yyyy • h:mm a')}
+                        {transaction.date ? format(new Date(transaction.date), 'MMM d, yyyy • h:mm a') : 'Unknown date'}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className={`font-semibold ${
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                        {transaction.type === 'income' ? '+' : '-'}{formatAmount(transaction.amount ?? 0)}
                       </p>
-                      <p className="text-sm text-gray-500 capitalize">{transaction.type}</p>
+                      <p className="text-sm text-gray-500 capitalize">{transaction.type ?? 'Unknown'}</p>
                     </div>
                   </Link>
                 ))
@@ -252,7 +296,7 @@ const CategoryDetail = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-600">Name</p>
-                <p className="font-medium">{category.name}</p>
+                <p className="font-medium">{category.name ?? 'Unknown'}</p>
               </div>
               
               {category.description && (
@@ -267,9 +311,9 @@ const CategoryDetail = () => {
                 <div className="flex items-center">
                   <div 
                     className="h-6 w-6 rounded-full mr-2"
-                    style={{ backgroundColor: category.color }}
+                    style={{ backgroundColor: category.color ?? '#6B7280' }}
                   />
-                  <span className="font-medium">{category.color}</span>
+                  <span className="font-medium">{category.color ?? '#6B7280'}</span>
                 </div>
               </div>
 
@@ -283,7 +327,7 @@ const CategoryDetail = () => {
               <div>
                 <p className="text-sm text-gray-600">Created</p>
                 <p className="font-medium">
-                   {category.createdAt ? format(new Date(category.createdAt), 'MMM d, yyyy') : 'Unknown'}
+                  {category.createdAt ? format(new Date(category.createdAt), 'MMM d, yyyy') : 'Unknown'}
                 </p>
               </div>
 
@@ -302,21 +346,21 @@ const CategoryDetail = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Transaction Count</span>
-                <span className="font-medium">{stats?.count || 0}</span>
+                <span className="font-medium">{transactionCount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Average Transaction</span>
                 <span className="font-medium">
-                  ${(stats?.total / (stats?.count || 1)).toFixed(2)}
+                  {formatAmount(averageTransaction)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">This Month</span>
-                <span className="font-medium">${(stats?.total || 0).toFixed(2)}</span>
+                <span className="font-medium">{formatAmount(totalSpent)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Last Month</span>
-                <span className="font-medium">$0.00</span>
+                <span className="font-medium">{formatAmount(0)}</span>
               </div>
             </div>
           </div>
@@ -327,7 +371,7 @@ const CategoryDetail = () => {
             <div className="space-y-3">
               <Link
                 to="/transactions/create"
-                className="w-full btn-primary"
+                className="w-full btn-primary inline-flex items-center justify-center"
               >
                 Add Transaction
               </Link>
@@ -340,10 +384,7 @@ const CategoryDetail = () => {
                 </button>
               )}
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(category.id);
-                  toast.success('Category ID copied');
-                }}
+                onClick={handleCopyId}
                 className="w-full btn-secondary"
               >
                 Copy Category ID

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FiCalendar, FiDollarSign, FiPlus, FiMinus, FiArrowLeft } from 'react-icons/fi';
+import { FiCalendar, FiPlus, FiMinus, FiArrowLeft } from 'react-icons/fi';
 import { format } from 'date-fns';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const CreateBudget = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { currency, formatAmount } = useCurrency();
   
   const isEditMode = !!id;
   const [loading, setLoading] = useState(false);
@@ -21,10 +23,18 @@ const CreateBudget = () => {
   });
 
   useEffect(() => {
-    if (isEditMode) {
-      fetchBudget();
-    }
-    fetchCategories();
+    const fetchData = async () => {
+      try {
+        if (isEditMode) {
+          await fetchBudget();
+        }
+        await fetchCategories();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    
+    fetchData();
   }, [id]);
 
   const fetchBudget = async () => {
@@ -52,10 +62,11 @@ const CreateBudget = () => {
     try {
       const response = await api.get('/categories');
       if (response.data.success) {
-        setCategories(response.data.data.categories);
+        setCategories(response.data.data.categories ?? []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast.error('Failed to load categories');
     }
   };
 
@@ -85,7 +96,7 @@ const CreateBudget = () => {
         } else {
           updatedCategories[existingIndex] = {
             ...updatedCategories[existingIndex],
-            budget: parseFloat(value),
+            budget: parseFloat(value) || 0,
           };
         }
         
@@ -100,7 +111,7 @@ const CreateBudget = () => {
             ...prev.categories,
             {
               category_id: categoryId,
-              budget: parseFloat(value),
+              budget: parseFloat(value) || 0,
             },
           ],
         };
@@ -142,8 +153,10 @@ const CreateBudget = () => {
     
     try {
       const budgetData = {
-        ...formData,
-        total_budget: parseFloat(formData.total_budget),
+        month: formData.month,
+        year: formData.year,
+        total_budget: parseFloat(formData.total_budget) || 0,
+        categories: formData.categories,
       };
       
       let response;
@@ -154,7 +167,7 @@ const CreateBudget = () => {
         response = await api.post('/budgets', budgetData);
       }
       
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success(isEditMode ? 'Budget updated successfully' : 'Budget created successfully');
         navigate('/budgets');
       }
@@ -248,24 +261,21 @@ const CreateBudget = () => {
             <div>
               <label className="label">
                 <div className="flex items-center">
-                  <FiDollarSign className="h-4 w-4 mr-2 text-gray-400" />
+                  <FiCalendar className="h-4 w-4 mr-2 text-gray-400" />
                   Total Budget *
                 </div>
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  name="total_budget"
-                  value={formData.total_budget}
-                  onChange={handleChange}
-                  className="input-field pl-7"
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  required
-                />
-              </div>
+              <input
+                type="number"
+                name="total_budget"
+                value={formData.total_budget}
+                onChange={handleChange}
+                className="input-field"
+                placeholder={`${currency.symbol}0.00`}
+                step="0.01"
+                min="0"
+                required
+              />
             </div>
           </div>
 
@@ -273,7 +283,7 @@ const CreateBudget = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Category Budgets</h3>
               <div className="text-sm text-gray-600">
-                Total: ${calculateTotal().toFixed(2)} / ${formData.total_budget || '0.00'}
+                Total: {formatAmount(calculateTotal())} / {formatAmount(parseFloat(formData.total_budget) || 0)}
               </div>
             </div>
 
@@ -296,24 +306,21 @@ const CreateBudget = () => {
                       <p className="font-medium text-gray-900">{category.name}</p>
                       {category.monthly_budget && (
                         <p className="text-sm text-gray-500">
-                          Previous: ${category.monthly_budget.toFixed(2)}
+                          Previous: {formatAmount(category.monthly_budget)}
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-gray-500">$</span>
-                      <input
-                        type="number"
-                        value={getCategoryBudget(category.id)}
-                        onChange={(e) => handleCategoryChange(category.id, e.target.value)}
-                        className="input-field w-32 pl-7"
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                      />
-                    </div>
+                    <input
+                      type="number"
+                      value={getCategoryBudget(category.id)}
+                      onChange={(e) => handleCategoryChange(category.id, e.target.value)}
+                      className="input-field w-32"
+                      placeholder={`${currency.symbol}0.00`}
+                      step="0.01"
+                      min="0"
+                    />
                     {getCategoryBudget(category.id) ? (
                       <button
                         type="button"
@@ -325,7 +332,7 @@ const CreateBudget = () => {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleCategoryChange(category.id, category.monthly_budget || '100')}
+                        onClick={() => handleCategoryChange(category.id, category.monthly_budget?.toString() || '100')}
                         className="text-primary-600 hover:text-primary-700"
                       >
                         <FiPlus className="h-5 w-5" />
@@ -352,13 +359,13 @@ const CreateBudget = () => {
               <div>
                 <p className="text-sm text-blue-600">Total Budget</p>
                 <p className="text-2xl font-bold text-blue-900">
-                  ${formData.total_budget || '0.00'}
+                  {formatAmount(parseFloat(formData.total_budget) || 0)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-blue-600">Allocated</p>
                 <p className="text-2xl font-bold text-blue-900">
-                  ${calculateTotal().toFixed(2)}
+                  {formatAmount(calculateTotal())}
                 </p>
               </div>
               <div>
@@ -368,7 +375,7 @@ const CreateBudget = () => {
                     ? 'text-red-600' 
                     : 'text-green-600'
                 }`}>
-                  ${((parseFloat(formData.total_budget) || 0) - calculateTotal()).toFixed(2)}
+                  {formatAmount((parseFloat(formData.total_budget) || 0) - calculateTotal())}
                 </p>
               </div>
             </div>

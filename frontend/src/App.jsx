@@ -7,6 +7,7 @@ import {
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { BalanceProvider } from "./context/BalanceContext";
+import { CurrencyProvider } from "./context/CurrencyContext";
 
 //App Css
 import "./App.css";
@@ -21,6 +22,9 @@ import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import VerifyEmail from "./pages/auth/VerifyEmail";
+
+//theme
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Dashboard Pages
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -58,98 +62,105 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: "#363636",
-              color: "#fff"
-            },
-            success: {
-              duration: 3000,
-              iconTheme: {
-                primary: "#10b981",
-                secondary: "#fff"
-              }
-            },
-            error: {
-              duration: 4000,
-              iconTheme: {
-                primary: "#ef4444",
-                secondary: "#fff"
-              }
-            }
-          }}
-        />
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <ThemeProvider>
+          <CurrencyProvider>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: "#363636",
+                  color: "#fff"
+                },
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: "#10b981",
+                    secondary: "#fff"
+                  }
+                },
+                error: {
+                  duration: 4000,
+                  iconTheme: {
+                    primary: "#ef4444",
+                    secondary: "#fff"
+                  }
+                }
+              }}
+            />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                {" "}<BalanceProvider>
-                  <Layout />{" "}
-                </BalanceProvider>
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
+              {/* Protected Routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    {" "}<BalanceProvider>
+                      <Layout />{" "}
+                    </BalanceProvider>
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="profile" element={<Profile />} />
 
-            {/* Transactions */}
-            <Route path="transactions">
-              <Route index element={<Transactions />} />
-              <Route path="create" element={<CreateTransaction />} />
-              <Route path="edit/:id" element={<CreateTransaction />} />
-              <Route path=":id" element={<TransactionDetail />} />
-            </Route>
+                {/* Transactions */}
+                <Route path="transactions">
+                  <Route index element={<Transactions />} />
+                  <Route path="create" element={<CreateTransaction />} />
+                  <Route path="edit/:id" element={<CreateTransaction />} />
+                  <Route path=":id" element={<TransactionDetail />} />
+                </Route>
 
-            {/* Budgets */}
-            <Route path="budgets">
-              <Route index element={<Budgets />} />
-              <Route path="create" element={<CreateBudget />} />
-              <Route path="edit/:id" element={<CreateBudget />} />
-              <Route path=":id" element={<BudgetDetail />} />
-            </Route>
+                {/* Budgets */}
+                <Route path="budgets">
+                  <Route index element={<Budgets />} />
+                  <Route path="create" element={<CreateBudget />} />
+                  <Route path="edit/:id" element={<CreateBudget />} />
+                  <Route path=":id" element={<BudgetDetail />} />
+                </Route>
 
-            {/* Categories */}
-            <Route path="categories">
-              <Route index element={<Categories />} />
-              <Route path="create" element={<CreateCategory />} />
-              <Route path="edit/:id" element={<CreateCategory />} />
-              <Route path=":id" element={<CategoryDetail />} />
-            </Route>
+                {/* Categories */}
+                <Route path="categories">
+                  <Route index element={<Categories />} />
+                  <Route path="create" element={<CreateCategory />} />
+                  <Route path="edit/:id" element={<CreateCategory />} />
+                  <Route path=":id" element={<CategoryDetail />} />
+                </Route>
 
-            {/* Analytics */}
-            <Route path="analytics">
-              <Route index element={<Analytics />} />
-              <Route path="reports" element={<Reports />} />
-            </Route>
+                {/* Analytics */}
+                <Route path="analytics">
+                  <Route index element={<Analytics />} />
+                  <Route path="reports" element={<Reports />} />
+                </Route>
 
-            {/* Settings */}
-            <Route path="settings">
-              <Route index element={<Settings />} />
-              <Route path="account" element={<AccountSettings />} />
-              <Route path="notifications" element={<NotificationSettings />} />
-              <Route path="privacy" element={<PrivacySecurity />} />
-              <Route path="preferences" element={<Preferences />} />
-              <Route path="email" element={<EmailSettings />} />
-              <Route path="password" element={<PasswordSettings />} />
-            </Route>
-          </Route>
+                {/* Settings */}
+                <Route path="settings">
+                  <Route index element={<Settings />} />
+                  <Route path="account" element={<AccountSettings />} />
+                  <Route
+                    path="notifications"
+                    element={<NotificationSettings />}
+                  />
+                  <Route path="privacy" element={<PrivacySecurity />} />
+                  <Route path="preferences" element={<Preferences />} />
+                  <Route path="email" element={<EmailSettings />} />
+                  <Route path="password" element={<PasswordSettings />} />
+                </Route>
+              </Route>
 
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+              {/* Catch all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </CurrencyProvider>
+        </ThemeProvider>
       </AuthProvider>
     </Router>
   );

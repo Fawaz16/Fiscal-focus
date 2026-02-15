@@ -1,123 +1,134 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiMail, FiArrowLeft } from 'react-icons/fi';
+import { FiMail, FiArrowLeft, FiCheck } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const { forgotPassword } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
     const result = await forgotPassword(email);
     
     if (result.success) {
       setSuccess(true);
+    } else {
+      setError(result.error || 'Failed to send reset link. Please try again.');
     }
     
     setLoading(false);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="h-12 w-12 rounded-lg bg-primary-600 flex items-center justify-center">
-            <FiMail className="h-8 w-8 text-white" />
+  // Success state using Tailwind
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-4 md:px-6 py-6 font-sans">
+        <div className="bg-white rounded-lg p-8 max-w-[440px] w-full mx-auto shadow-medium">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-success-500 rounded-lg mx-auto mb-6 flex items-center justify-center text-onPrimary text-h1">
+              <FiCheck size={32} />
+            </div>
+            <h2 className="text-h2 font-bold text-gray-900 mb-2 leading-tight">
+              Check your email
+            </h2>
+            <p className="text-body text-gray-500 leading-relaxed mb-6">
+              We've sent a password reset link to{' '}
+              <strong className="text-gray-900">{email}</strong>
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-6 py-2 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-100 rounded-md cursor-pointer transition-all duration-200 no-underline hover:border-primary-500 hover:bg-gray-50 w-auto"
+            >
+              <FiArrowLeft size={18} />
+              Back to login
+            </Link>
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-4 md:px-6 py-6 font-sans">
+      {/* Logo Section */}
+      <div className="mx-auto w-full max-w-[440px] text-center mb-10">
+        <div className="w-16 h-16 bg-primary-500 rounded-lg mx-auto mb-4 flex items-center justify-center text-onPrimary text-h1">
+          <FiMail size={32} />
+        </div>
+        <h1 className="text-h1 font-bold text-gray-900 mb-1 leading-tight">
           Reset your password
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        </h1>
+        <p className="text-body text-gray-500 leading-relaxed">
           Enter your email and we'll send you a reset link
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {success ? (
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                <FiMail className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
-                Check your email
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                We've sent a password reset link to {email}
-              </p>
-              <div className="mt-6">
-                <Link
-                  to="/login"
-                  className="btn-primary inline-flex items-center"
-                >
-                  <FiArrowLeft className="mr-2 h-4 w-4" />
-                  Back to login
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="email" className="label">
-                  Email address
-                </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field pl-10"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full btn-primary py-3"
-                >
-                  {loading ? 'Sending...' : 'Send reset link'}
-                </button>
-              </div>
-            </form>
-          )}
-
-          <div className="mt-6">
+      {/* Card */}
+      <div className="bg-white rounded-lg p-8 max-w-[440px] w-full mx-auto shadow-medium">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+          {/* Email Field */}
+          <div className="relative">
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
+              Email address
+            </label>
             <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Remember your password?
-                </span>
-              </div>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl pointer-events-none">
+                <FiMail size={20} />
+              </span>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`w-full py-2 pr-4 pl-12 text-body font-regular text-gray-900 bg-white border-2 rounded-md outline-2 outline-primary-500 transition-all duration-200 focus:border-primary-500 focus:shadow-[0_0_0_3px_rgba(135,215,72,0.1)] ${
+                  error ? 'border-danger-500' : 'border-gray-100'
+                }`}
+                placeholder="you@example.com"
+              />
             </div>
-
-            <div className="mt-6">
-              <Link
-                to="/login"
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Back to login
-              </Link>
-            </div>
+            {error && (
+              <p className="text-sm font-regular text-danger-500 mt-1 ml-1">
+                {error}
+              </p>
+            )}
           </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-4 text-body font-semibold text-onPrimary bg-primary-500 border-none rounded-md transition-all duration-200 flex items-center justify-center gap-2 hover:bg-primaryHover hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(135,215,72,0.2)] ${
+              loading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+            }`}
+          >
+            {loading ? 'Sending...' : 'Send reset link'}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="relative text-center my-6">
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-100" />
+          <span className="relative inline-block px-4 bg-white text-sm font-regular text-gray-500">
+            Remember your password?
+          </span>
         </div>
+
+        {/* Secondary Action */}
+        <Link
+          to="/login"
+          className="w-full block py-4 text-sm font-semibold text-gray-900 bg-white border-2 border-gray-100 rounded-md cursor-pointer transition-all duration-200 no-underline text-center mt-4 hover:border-primary-500 hover:bg-gray-50"
+        >
+          Back to login
+        </Link>
       </div>
     </div>
   );

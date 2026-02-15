@@ -1,7 +1,6 @@
-// src/pages/auth/VerifyEmail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FiCheck, FiX } from 'react-icons/fi';
+import { FiCheck, FiX, FiMail } from 'react-icons/fi';
 import api from '../../services/api';
 
 const VerifyEmail = () => {
@@ -36,53 +35,71 @@ const VerifyEmail = () => {
     }
   };
 
+  // Loading/Verifying state
+  if (verifying) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-4 md:px-6 py-6 font-sans">
+        <div className="bg-white rounded-lg p-8 max-w-[440px] w-full mx-auto shadow-medium">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-lg mx-auto mb-6 flex items-center justify-center animate-pulse">
+              <FiMail size={32} className="text-primary-500" />
+            </div>
+            <div className="mb-6">
+              <div className="w-12 h-12 mx-auto border-4 border-gray-100 border-t-primary-500 rounded-full animate-spin" />
+            </div>
+            <h2 className="text-h2 font-bold text-gray-900 mb-2 leading-tight">
+              Verifying your email...
+            </h2>
+            <p className="text-body text-gray-500 leading-relaxed">
+              Please wait while we verify your email address.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-          {verifying ? (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-4 md:px-6 py-6 font-sans">
+      <div className="bg-white rounded-lg p-8 max-w-[440px] w-full mx-auto shadow-medium">
+        <div className="text-center">
+          {/* Status Icon */}
+          <div className={`w-16 h-16 rounded-lg mx-auto mb-6 flex items-center justify-center text-onPrimary text-h1 ${
+            success ? 'bg-success-500' : 'bg-danger-500'
+          }`}>
+            {success ? (
+              <FiCheck size={32} />
+            ) : (
+              <FiX size={32} />
+            )}
+          </div>
+
+          {/* Status Message */}
+          <h2 className="text-h2 font-bold text-gray-900 mb-2 leading-tight">
+            {success ? 'Email Verified!' : 'Verification Failed'}
+          </h2>
+          
+          <p className="text-body text-gray-500 leading-relaxed mb-10">
+            {message}
+          </p>
+
+          {/* Actions */}
+          {success ? (
             <>
-              <div className="mx-auto h-12 w-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+              <div className="text-body text-gray-500 leading-relaxed mb-4">
+                Redirecting to login page...
               </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
-                Verifying your email...
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Please wait while we verify your email address.
-              </p>
+              <div className="w-40 h-1 mx-auto bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-primary-500 rounded-full animate-[progress_3s_linear_forwards]" />
+              </div>
             </>
           ) : (
-            <>
-              <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${
-                success ? 'bg-green-100' : 'bg-red-100'
-              }`}>
-                {success ? (
-                  <FiCheck className="h-6 w-6 text-green-600" />
-                ) : (
-                  <FiX className="h-6 w-6 text-red-600" />
-                )}
-              </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
-                {success ? 'Email Verified!' : 'Verification Failed'}
-              </h3>
-              <p className="mt-2 text-sm text-gray-600">{message}</p>
-              
-              <div className="mt-6">
-                {success ? (
-                  <div className="text-sm text-gray-500">
-                    Redirecting to login page...
-                  </div>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="btn-primary inline-block"
-                  >
-                    Go to Login
-                  </Link>
-                )}
-              </div>
-            </>
+            <Link
+              to="/login"
+              className="inline-block min-w-[160px] px-10 py-2 text-body font-semibold text-onPrimary bg-primary-500 border-none rounded-md cursor-pointer transition-all duration-200 no-underline text-center hover:bg-primaryHover hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(135,215,72,0.2)]"
+            >
+              Go to Login
+            </Link>
           )}
         </div>
       </div>

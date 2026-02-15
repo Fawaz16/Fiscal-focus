@@ -1,7 +1,10 @@
 import { format } from 'date-fns';
 import { FiShoppingBag, FiCoffee, FiCar, FiHome } from 'react-icons/fi';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const RecentTransactions = ({ transactions }) => {
+  const { formatAmount } = useCurrency();
+
   const getCategoryIcon = (categoryName) => {
     switch (categoryName?.toLowerCase()) {
       case 'food & dining':
@@ -14,6 +17,21 @@ const RecentTransactions = ({ transactions }) => {
         return <FiHome className="h-5 w-5" />;
       default:
         return <FiShoppingBag className="h-5 w-5" />;
+    }
+  };
+
+  const getCategoryColor = (categoryName) => {
+    switch (categoryName?.toLowerCase()) {
+      case 'food & dining':
+        return 'bg-orange-100 text-orange-600';
+      case 'shopping':
+        return 'bg-purple-100 text-purple-600';
+      case 'transportation':
+        return 'bg-blue-100 text-blue-600';
+      case 'bills & utilities':
+        return 'bg-yellow-100 text-yellow-600';
+      default:
+        return 'bg-gray-100 text-gray-600';
     }
   };
 
@@ -32,26 +50,28 @@ const RecentTransactions = ({ transactions }) => {
           key={transaction.id}
           className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
         >
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0 flex-1">
             <div className={`p-2 rounded-lg ${
-              transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+              getCategoryColor(transaction.Category?.name)
             }`}>
               {getCategoryIcon(transaction.Category?.name)}
             </div>
-            <div className="ml-4">
-              <p className="font-medium text-gray-900">{transaction.description}</p>
+            <div className="ml-4 truncate">
+              <p className="font-medium text-gray-900 truncate">{transaction.description}</p>
               <p className="text-sm text-gray-500">
                 {transaction.Category?.name} • {format(new Date(transaction.date), 'MMM d, h:mm a')}
               </p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-right ml-4 flex-shrink-0">
             <p className={`font-semibold ${
               transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
             }`}>
-              {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+              {transaction.type === 'income' ? '+' : '-'}{formatAmount(transaction.amount)}
             </p>
-            <p className="text-sm text-gray-500">{transaction.payment_method}</p>
+            <p className="text-sm text-gray-500 capitalize">
+              {transaction.payment_method?.replace('_', ' ')}
+            </p>
           </div>
         </div>
       ))}

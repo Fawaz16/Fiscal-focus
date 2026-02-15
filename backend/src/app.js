@@ -41,7 +41,9 @@ const rateLimiterMiddleware = (req, res, next) => {
 
 // Security and rate limiting
 app.use("/api/", rateLimiterMiddleware);
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

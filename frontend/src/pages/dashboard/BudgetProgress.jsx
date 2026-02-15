@@ -1,5 +1,8 @@
+import { useCurrency } from '../../context/CurrencyContext';
 
 const BudgetProgress = ({ budget }) => {
+  const { formatAmount, currency } = useCurrency();
+
   if (!budget) {
     return (
       <div className="card">
@@ -18,8 +21,12 @@ const BudgetProgress = ({ budget }) => {
       <div className="space-y-4">
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600">Spent: ${budget.total_spent.toFixed(2)}</span>
-            <span className="text-gray-600">Budget: ${budget.total_budget.toFixed(2)}</span>
+            <span className="text-gray-600">
+              Spent: {formatAmount(budget.total_spent)}
+            </span>
+            <span className="text-gray-600">
+              Budget: {formatAmount(budget.total_budget)}
+            </span>
           </div>
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
@@ -39,13 +46,13 @@ const BudgetProgress = ({ budget }) => {
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Income</p>
             <p className="text-2xl font-bold text-gray-900">
-              ${budget.total_income.toFixed(2)}
+              {formatAmount(budget.total_income)}
             </p>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Remaining</p>
             <p className="text-2xl font-bold text-gray-900">
-              ${remaining > 0 ? remaining.toFixed(2) : '0.00'}
+              {formatAmount(remaining > 0 ? remaining : 0)}
             </p>
           </div>
         </div>
@@ -53,7 +60,7 @@ const BudgetProgress = ({ budget }) => {
         <div className="pt-4 border-t">
           <p className="text-sm text-gray-600 mb-2">Savings this month:</p>
           <p className="text-2xl font-bold text-green-600">
-            +${budget.savings.toFixed(2)}
+            +{formatAmount(budget.savings)}
           </p>
         </div>
       </div>

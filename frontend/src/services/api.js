@@ -8,6 +8,25 @@ const api = axios.create({
   },
 });
 
+// Helper function to get full profile picture URL
+export const getProfilePictureUrl = (profilePicturePath) => {
+  if (!profilePicturePath) return null;
+  
+  // If it's already a full URL, return as is
+  if (profilePicturePath.startsWith('http')) {
+    return profilePicturePath;
+  }
+  
+  // Otherwise, prepend the base URL without /api
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const cleanBaseUrl = baseUrl.replace('/api', '');
+  
+  // Ensure the path starts with a forward slash
+  const cleanPath = profilePicturePath.startsWith('/') ? profilePicturePath : `/${profilePicturePath}`;
+  
+  return `${cleanBaseUrl}${cleanPath}`;
+};
+
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -58,9 +77,6 @@ api.interceptors.response.use(
         case 500:
           toast.error('Server error. Please try again later.');
           break;
-          
-        default:
-          // toast.error(data.message || 'An error occurred.');
       }
     } else if (error.request) {
       toast.error('Network error. Please check your connection.');

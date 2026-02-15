@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { FiDownload, FiPrinter, FiCalendar, FiFilter, FiFileText, FiPieChart, FiBarChart, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
 import { format, subMonths, startOfYear, parseISO, subDays } from 'date-fns';
 import Papa from 'papaparse';
@@ -7,8 +7,10 @@ import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const Reports = () => {
+  const { currency, formatAmount } = useCurrency();
   const [dateRange, setDateRange] = useState({
     startDate: format(startOfYear(new Date()), 'yyyy-MM-dd'),
     endDate: format(new Date(), 'yyyy-MM-dd'),
@@ -28,30 +30,26 @@ const Reports = () => {
     forecast: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Ref to track if report should auto-generate
-  const shouldAutoGenerate = useRef(false);
+  const [error, setError] = useState(null);
   
   // Auto-generate report when reportType changes (except custom)
   useEffect(() => {
-    if (shouldAutoGenerate.current && reportType !== 'custom') {
+    if (reportType !== 'custom' && reportType !== '') {
       const timer = setTimeout(() => {
         handleGenerateReport();
       }, 100);
       
       return () => clearTimeout(timer);
     }
-    
-    shouldAutoGenerate.current = false;
   }, [reportType, includeOptions]);
 
   // Fetch data from backend using your API service
   const fetchReportData = async () => {
     setIsLoading(true);
     setGenerating(true);
+    setError(null);
     
     try {
-      // Use your API service instead of fetch
       const [dashboardRes, transactionsRes, categoriesRes, budgetRes] = await Promise.allSettled([
         api.get('/user/dashboard'),
         api.get('/transactions', {
@@ -65,7 +63,6 @@ const Reports = () => {
         api.get('/budgets/overview')
       ]);
 
-      // Extract data from responses
       const dashboardData = dashboardRes.status === 'fulfilled' ? dashboardRes.value.data : null;
       const transactionsData = transactionsRes.status === 'fulfilled' ? transactionsRes.value.data : null;
       const categoriesData = categoriesRes.status === 'fulfilled' ? categoriesRes.value.data : null;
@@ -83,8 +80,8 @@ const Reports = () => {
       
     } catch (error) {
       console.error('Error fetching report data:', error);
+      setError('Failed to generate report. Using sample data.');
       toast.error('Failed to generate report. Using sample data.');
-      // Fallback to sample data
       setReportData(generateMockReportData());
     } finally {
       setIsLoading(false);
@@ -93,7 +90,6 @@ const Reports = () => {
   };
 
   const processReportData = (dashboard, transactions, categories, budget) => {
-    // Process and structure data for reports
     const income = transactions?.data?.transactions?.filter(t => t.type === 'income') || [];
     const expenses = transactions?.data?.transactions?.filter(t => t.type === 'expense') || [];
     
@@ -200,19 +196,6 @@ const Reports = () => {
     };
   };
 
-  const calculateSavingsProgress = (savingsData) => {
-    if (!savingsData) return null;
-
-    return {
-      target: savingsData.target || 0,
-      current: savingsData.current || 0,
-      progress: savingsData.progress || 0,
-      remaining: savingsData.remaining || 0,
-      isOnTrack: savingsData.is_on_track || false,
-      dailyRequired: savingsData.daily_required || 0
-    };
-  };
-
   const generateMockReportData = () => {
     const mockTransactions = Array.from({ length: 30 }, (_, i) => ({
       id: `mock-${i}`,
@@ -267,30 +250,26 @@ const Reports = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     
-    // Title
     doc.setFontSize(20);
     doc.text('Financial Report', pageWidth / 2, 20, { align: 'center' });
     
-    // Date Range
     doc.setFontSize(12);
     doc.text(`Period: ${reportData.dateRange.start} to ${reportData.dateRange.end}`, pageWidth / 2, 30, { align: 'center' });
     doc.text(`Generated: ${format(new Date(), 'MMM d, yyyy h:mm a')}`, pageWidth / 2, 37, { align: 'center' });
     
-    // Summary Table
     doc.autoTable({
       startY: 45,
       head: [['Metric', 'Amount']],
       body: [
-        ['Total Income', `$${reportData.summary.totalIncome.toFixed(2)}`],
-        ['Total Expenses', `$${reportData.summary.totalExpenses.toFixed(2)}`],
-        ['Net Balance', `$${reportData.summary.netBalance.toFixed(2)}`],
+        ['Total Income', formatAmount(reportData.summary.totalIncome)],
+        ['Total Expenses', formatAmount(reportData.summary.totalExpenses)],
+        ['Net Balance', formatAmount(reportData.summary.netBalance)],
         ['Transaction Count', reportData.summary.transactionCount.toString()],
       ],
     });
 
     let finalY = doc.lastAutoTable.finalY + 10;
 
-    // Category Breakdown
     if (includeOptions.categories && reportData.categoryBreakdown.length > 0) {
       doc.setFontSize(16);
       doc.text('Category Breakdown', 14, finalY);
@@ -298,7 +277,7 @@ const Reports = () => {
       
       const categoryData = reportData.categoryBreakdown.map(cat => [
         cat.name,
-        `$${cat.amount.toFixed(2)}`,
+        formatAmount(cat.amount),
         `${cat.percentage.toFixed(1)}%`,
         cat.count.toString()
       ]);
@@ -311,7 +290,6 @@ const Reports = () => {
       finalY = doc.lastAutoTable.finalY + 10;
     }
 
-    // Budget Analysis
     if (includeOptions.budgets && reportData.budgetAnalysis) {
       doc.setFontSize(16);
       doc.text('Budget Analysis', 14, finalY);
@@ -321,23 +299,21 @@ const Reports = () => {
         startY: finalY,
         head: [['Metric', 'Value']],
         body: [
-          ['Total Budget', `$${reportData.budgetAnalysis.totalBudget.toFixed(2)}`],
-          ['Total Spent', `$${reportData.budgetAnalysis.totalSpent.toFixed(2)}`],
-          ['Remaining', `$${reportData.budgetAnalysis.remaining.toFixed(2)}`],
+          ['Total Budget', formatAmount(reportData.budgetAnalysis.totalBudget)],
+          ['Total Spent', formatAmount(reportData.budgetAnalysis.totalSpent)],
+          ['Remaining', formatAmount(reportData.budgetAnalysis.remaining)],
           ['Utilization', `${reportData.budgetAnalysis.utilization.toFixed(1)}%`],
-          ['Daily Average', `$${reportData.budgetAnalysis.dailyAverage.toFixed(2)}`],
+          ['Daily Average', formatAmount(reportData.budgetAnalysis.dailyAverage)],
         ],
       });
     }
 
-    // Save the PDF
     doc.save(`financial-report-${format(new Date(), 'yyyy-MM-dd-HHmm')}.pdf`);
   };
 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
     
-    // Summary Sheet
     const summaryData = [
       ['Financial Report Summary'],
       [`Period: ${reportData.dateRange.start} to ${reportData.dateRange.end}`],
@@ -353,7 +329,6 @@ const Reports = () => {
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
 
-    // Transactions Sheet
     if (includeOptions.transactions && reportData.transactions.length > 0) {
       const transactionsData = reportData.transactions.map(t => ({
         'Date': format(parseISO(t.date), 'yyyy-MM-dd'),
@@ -367,7 +342,6 @@ const Reports = () => {
       XLSX.utils.book_append_sheet(workbook, transactionsSheet, 'Transactions');
     }
 
-    // Categories Sheet
     if (includeOptions.categories && reportData.categoryBreakdown.length > 0) {
       const categoriesData = reportData.categoryBreakdown.map(c => ({
         'Category': c.name,
@@ -380,12 +354,10 @@ const Reports = () => {
       XLSX.utils.book_append_sheet(workbook, categoriesSheet, 'Categories');
     }
 
-    // Save file
     XLSX.writeFile(workbook, `financial-report-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`);
   };
 
   const exportToCSV = () => {
-    // Create summary CSV
     const summaryCSV = Papa.unparse({
       fields: ['Metric', 'Value'],
       data: [
@@ -398,7 +370,6 @@ const Reports = () => {
       ]
     });
 
-    // Create blob and download
     const blob = new Blob([summaryCSV], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -411,38 +382,44 @@ const Reports = () => {
   };
 
   const handlePrint = () => {
-    const printContent = document.getElementById('report-preview');
-    if (!printContent) {
+    if (!reportData) {
       toast.error('No report to print');
       return;
     }
     
-    const originalContent = document.body.innerHTML;
-    const printContentHTML = printContent.innerHTML;
-    
-    document.body.innerHTML = `
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Please allow pop-ups to print');
+      return;
+    }
+
+    printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>Financial Report</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
+            body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
             .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-            .print-header h1 { color: #1F2937; margin-bottom: 5px; font-size: 24px; }
-            .print-header .date { color: #6B7280; }
-            .section { margin-bottom: 30px; break-inside: avoid; }
-            .section h2 { color: #374151; border-bottom: 1px solid #E5E7EB; padding-bottom: 5px; font-size: 18px; }
-            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-            th { background-color: #F9FAFB; text-align: left; padding: 8px; border: 1px solid #E5E7EB; font-weight: bold; }
-            td { padding: 8px; border: 1px solid #E5E7EB; }
-            .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin: 20px 0; }
-            .summary-card { flex: 1; min-width: 200px; padding: 15px; border-radius: 8px; border: 1px solid #E5E7EB; }
+            .print-header h1 { color: #1F2937; margin-bottom: 10px; font-size: 24px; }
+            .print-header .date { color: #6B7280; font-size: 14px; }
+            .section { margin-bottom: 30px; page-break-inside: avoid; }
+            .section h2 { color: #374151; border-bottom: 1px solid #E5E7EB; padding-bottom: 8px; font-size: 18px; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th { background-color: #F9FAFB; text-align: left; padding: 10px; border: 1px solid #E5E7EB; font-weight: bold; }
+            td { padding: 10px; border: 1px solid #E5E7EB; }
+            .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+            .summary-card { padding: 15px; border-radius: 8px; border: 1px solid #E5E7EB; }
             .income { border-left: 4px solid #10B981; }
             .expense { border-left: 4px solid #EF4444; }
             .balance { border-left: 4px solid #3B82F6; }
             .transactions { border-left: 4px solid #8B5CF6; }
+            .category-item { margin-bottom: 15px; }
+            .category-bar { height: 8px; border-radius: 4px; margin: 8px 0; }
+            .category-details { display: flex; justify-content: space-between; }
             @media print {
               .no-print { display: none; }
+              body { margin: 0.5in; }
             }
           </style>
         </head>
@@ -452,14 +429,121 @@ const Reports = () => {
             <div class="date">${reportData.dateRange.start} to ${reportData.dateRange.end}</div>
             <div class="date">Generated: ${format(new Date(), 'MMM d, yyyy h:mm a')}</div>
           </div>
-          ${printContentHTML}
+          
+          <!-- Summary Section -->
+          <div class="section">
+            <h2>Financial Summary</h2>
+            <div class="summary-grid">
+              <div class="summary-card income">
+                <div style="font-size: 14px; color: #047857;">Total Income</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 8px;">${formatAmount(reportData.summary.totalIncome)}</div>
+              </div>
+              <div class="summary-card expense">
+                <div style="font-size: 14px; color: #B91C1C;">Total Expenses</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 8px;">${formatAmount(reportData.summary.totalExpenses)}</div>
+              </div>
+              <div class="summary-card balance">
+                <div style="font-size: 14px; color: #1E40AF;">Net Balance</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 8px;">${formatAmount(reportData.summary.netBalance)}</div>
+              </div>
+              <div class="summary-card transactions">
+                <div style="font-size: 14px; color: #6D28D9;">Transactions</div>
+                <div style="font-size: 24px; font-weight: bold; margin-top: 8px;">${reportData.summary.transactionCount}</div>
+              </div>
+            </div>
+          </div>
+
+          ${includeOptions.categories && reportData.categoryBreakdown.length > 0 ? `
+            <div class="section">
+              <h2>Category Breakdown</h2>
+              ${reportData.categoryBreakdown.map(cat => `
+                <div class="category-item">
+                  <div class="category-details">
+                    <span style="font-weight: 500;">${cat.name}</span>
+                    <span>${formatAmount(cat.amount)} (${cat.percentage.toFixed(1)}%)</span>
+                  </div>
+                  <div style="display: flex; align-items: center;">
+                    <div class="category-bar" style="width: ${Math.min(cat.percentage * 2, 100)}%; background-color: ${cat.color};"></div>
+                    <span style="font-size: 12px; color: #6B7280; margin-left: 10px;">${cat.count} transactions</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          ${includeOptions.budgets && reportData.budgetAnalysis ? `
+            <div class="section">
+              <h2>Budget Analysis</h2>
+              <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Total Budget</td><td>${formatAmount(reportData.budgetAnalysis.totalBudget)}</td></tr>
+                <tr><td>Total Spent</td><td>${formatAmount(reportData.budgetAnalysis.totalSpent)}</td></tr>
+                <tr><td>Remaining</td><td style="color: ${reportData.budgetAnalysis.remaining >= 0 ? '#10B981' : '#EF4444'}">${formatAmount(reportData.budgetAnalysis.remaining)}</td></tr>
+                <tr><td>Utilization</td><td>${reportData.budgetAnalysis.utilization.toFixed(1)}%</td></tr>
+                <tr><td>Daily Average</td><td>${formatAmount(reportData.budgetAnalysis.dailyAverage)}</td></tr>
+                <tr><td>Status</td><td style="color: ${reportData.budgetAnalysis.isOverBudget ? '#EF4444' : '#10B981'}">${reportData.budgetAnalysis.isOverBudget ? 'Over Budget' : 'Within Budget'}</td></tr>
+              </table>
+            </div>
+          ` : ''}
+
+          ${includeOptions.transactions && reportData.transactions.length > 0 ? `
+            <div class="section">
+              <h2>Recent Transactions</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reportData.transactions.slice(0, 10).map(t => `
+                    <tr>
+                      <td>${format(parseISO(t.date), 'MMM d, yyyy')}</td>
+                      <td>${t.description || ''}</td>
+                      <td>
+                        <div style="display: flex; align-items: center;">
+                          <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${t.Category?.color || '#999'}; margin-right: 8px;"></div>
+                          ${t.Category?.name || 'Uncategorized'}
+                        </div>
+                      </td>
+                      <td style="color: ${t.type === 'income' ? '#10B981' : '#EF4444'}">
+                        ${t.type === 'income' ? '+' : '-'}${formatAmount(t.amount)}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              ${reportData.transactions.length > 10 ? `<p style="text-align: center; color: #6B7280; margin-top: 10px;">Showing 10 of ${reportData.transactions.length} transactions</p>` : ''}
+            </div>
+          ` : ''}
+
+          ${includeOptions.savings && reportData.savingsProgress ? `
+            <div class="section">
+              <h2>Savings Progress</h2>
+              <div style="background-color: #E5E7EB; border-radius: 9999px; height: 16px; overflow: hidden;">
+                <div style="background-color: #10B981; height: 100%; width: ${Math.min(reportData.savingsProgress.progress, 100)}%;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <div><span style="color: #6B7280;">Current:</span> <span style="font-weight: 500;">${formatAmount(reportData.savingsProgress.current)}</span></div>
+                <div><span style="color: #6B7280;">Target:</span> <span style="font-weight: 500;">${formatAmount(reportData.savingsProgress.target)}</span></div>
+                <div><span style="color: #6B7280;">Remaining:</span> <span style="font-weight: 500;">${formatAmount(reportData.savingsProgress.remaining)}</span></div>
+              </div>
+              <p style="text-align: center; margin-top: 10px; color: ${reportData.savingsProgress.isOnTrack ? '#10B981' : '#F59E0B'};">
+                ${reportData.savingsProgress.isOnTrack ? '🎯 On track to reach goal' : '⚠️ Needs adjustment'}
+              </p>
+            </div>
+          ` : ''}
         </body>
       </html>
-    `;
+    `);
     
-    window.print();
-    document.body.innerHTML = originalContent;
-    window.location.reload();
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.onafterprint = () => printWindow.close();
   };
 
   const quickRanges = [
@@ -474,6 +558,7 @@ const Reports = () => {
       startDate: format(start, 'yyyy-MM-dd'),
       endDate: format(end, 'yyyy-MM-dd'),
     });
+    setTimeout(() => handleGenerateReport(), 300);
   };
 
   const toggleIncludeOption = (option) => {
@@ -538,21 +623,15 @@ const Reports = () => {
     setReportType(template.type);
     
     if (template.type === 'custom') {
-      // For custom, just show the form without auto-generating
       document.getElementById('report-generator')?.scrollIntoView({ behavior: 'smooth' });
       toast.info('Customize your report settings below');
     } else {
-      // For other templates, update includes and auto-generate
       const newIncludes = {};
       Object.keys(includeOptions).forEach(key => {
         newIncludes[key] = template.includes.includes(key);
       });
       setIncludeOptions(newIncludes);
       
-      // Set flag to auto-generate in useEffect
-      shouldAutoGenerate.current = true;
-      
-      // Scroll to generated report section
       setTimeout(() => {
         if (reportData) {
           document.getElementById('report-preview')?.scrollIntoView({ behavior: 'smooth' });
@@ -560,6 +639,17 @@ const Reports = () => {
       }, 500);
     }
   };
+
+  if (isLoading && !reportData) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading reports...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -590,6 +680,22 @@ const Reports = () => {
           )}
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Report Templates */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -632,7 +738,7 @@ const Reports = () => {
               <div className="flex space-x-3">
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click
+                    e.stopPropagation();
                     handleTemplateClick(template);
                   }}
                   className={`flex-1 btn ${isSelected ? 'btn-primary' : 'btn-outline-primary'} inline-flex items-center justify-center`}
@@ -655,26 +761,26 @@ const Reports = () => {
         <div className="mb-6">
           <label className="label mb-3">Report Type</label>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {reportTemplates.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                onClick={() => handleTemplateClick(template)}
-                className={`py-3 rounded-lg border-2 flex flex-col items-center justify-center ${
-                  reportType === template.type
-                    ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-sm hover:bg-primary hover:bg-blue-600 hover:text-white'
-                    : 'border-gray-300 text-gray-700 hover:border-white hover:bg-blue-600 hover:text-white'
-                } transition-all duration-200`}
-              >
-                {(() => {
-                  const Icon = template.icon;
-                  return <Icon className="h-5 w-5 mb-1" />;
-                })()}
-                <span className="text-sm font-medium">
-                  {template.type.charAt(0).toUpperCase() + template.type.slice(1)}
-                </span>
-              </button>
-            ))}
+            {reportTemplates.map((template) => {
+              const Icon = template.icon;
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => handleTemplateClick(template)}
+                  className={`py-3 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-200 ${
+                    reportType === template.type
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-gray-300 text-gray-700 hover:border-primary-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="h-5 w-5 mb-1" />
+                  <span className="text-sm font-medium">
+                    {template.type.charAt(0).toUpperCase() + template.type.slice(1)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -720,11 +826,7 @@ const Reports = () => {
                 <button
                   key={index}
                   type="button"
-                  onClick={() => {
-                    handleQuickRange(range.start, range.end);
-                    // Auto-generate after changing date range
-                    setTimeout(() => handleGenerateReport(), 300);
-                  }}
+                  onClick={() => handleQuickRange(range.start, range.end)}
                   className="w-full btn-secondary text-sm py-2"
                 >
                   {range.label}
@@ -797,6 +899,7 @@ const Reports = () => {
           <button
             onClick={() => {
               setReportData(null);
+              setError(null);
               toast.success('Report cleared');
             }}
             disabled={!reportData}
@@ -827,28 +930,28 @@ const Reports = () => {
 
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-linear-to-br from-green-50 to-green-100 p-4 rounded-lg">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
               <div className="text-sm text-green-700 font-medium">Total Income</div>
               <div className="text-2xl font-bold text-gray-900 mt-1">
-                ${reportData.summary.totalIncome.toFixed(2)}
+                {formatAmount(reportData.summary.totalIncome)}
               </div>
             </div>
             
-            <div className="bg-linear-to-br from-red-50 to-red-100 p-4 rounded-lg">
+            <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg">
               <div className="text-sm text-red-700 font-medium">Total Expenses</div>
               <div className="text-2xl font-bold text-gray-900 mt-1">
-                ${reportData.summary.totalExpenses.toFixed(2)}
+                {formatAmount(reportData.summary.totalExpenses)}
               </div>
             </div>
             
-            <div className="bg-linear-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
               <div className="text-sm text-blue-700 font-medium">Net Balance</div>
               <div className="text-2xl font-bold text-gray-900 mt-1">
-                ${reportData.summary.netBalance.toFixed(2)}
+                {formatAmount(reportData.summary.netBalance)}
               </div>
             </div>
             
-            <div className="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-lg">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg">
               <div className="text-sm text-purple-700 font-medium">Transactions</div>
               <div className="text-2xl font-bold text-gray-900 mt-1">
                 {reportData.summary.transactionCount}
@@ -873,7 +976,7 @@ const Reports = () => {
                     <div className="flex-1">
                       <div className="flex justify-between">
                         <span className="text-sm font-medium text-gray-700">{category.name}</span>
-                        <span className="text-sm text-gray-900">${category.amount.toFixed(2)}</span>
+                        <span className="text-sm text-gray-900">{formatAmount(category.amount)}</span>
                       </div>
                       <div className="text-xs text-gray-500">
                         {category.percentage.toFixed(1)}% • {category.count} transactions
@@ -894,13 +997,13 @@ const Reports = () => {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Total Budget</span>
                     <span className="text-sm font-medium text-gray-900">
-                      ${reportData.budgetAnalysis.totalBudget.toFixed(2)}
+                      {formatAmount(reportData.budgetAnalysis.totalBudget)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Total Spent</span>
                     <span className="text-sm font-medium text-gray-900">
-                      ${reportData.budgetAnalysis.totalSpent.toFixed(2)}
+                      {formatAmount(reportData.budgetAnalysis.totalSpent)}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -908,7 +1011,7 @@ const Reports = () => {
                     <span className={`text-sm font-medium ${
                       reportData.budgetAnalysis.remaining >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      ${reportData.budgetAnalysis.remaining.toFixed(2)}
+                      {formatAmount(reportData.budgetAnalysis.remaining)}
                     </span>
                   </div>
                 </div>
@@ -925,7 +1028,7 @@ const Reports = () => {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Daily Average</span>
                     <span className="text-sm font-medium text-gray-900">
-                      ${reportData.budgetAnalysis.dailyAverage.toFixed(2)}
+                      {formatAmount(reportData.budgetAnalysis.dailyAverage)}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -962,7 +1065,7 @@ const Reports = () => {
                           {format(parseISO(transaction.date), 'MMM d, yyyy')}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {transaction.description}
+                          {transaction.description || ''}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className="inline-flex items-center">
@@ -978,7 +1081,7 @@ const Reports = () => {
                         <td className={`px-4 py-3 whitespace-nowrap text-sm font-medium ${
                           transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                         }`}>
-                          {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                          {transaction.type === 'income' ? '+' : '-'}{formatAmount(transaction.amount)}
                         </td>
                       </tr>
                     ))}
@@ -1007,24 +1110,24 @@ const Reports = () => {
                 <div>
                   <span className="text-gray-600">Current:</span>
                   <span className="font-medium text-gray-900 ml-2">
-                    ${reportData.savingsProgress.current.toFixed(2)}
+                    {formatAmount(reportData.savingsProgress.current)}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Target:</span>
                   <span className="font-medium text-gray-900 ml-2">
-                    ${reportData.savingsProgress.target.toFixed(2)}
+                    {formatAmount(reportData.savingsProgress.target)}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Remaining:</span>
                   <span className="font-medium text-gray-900 ml-2">
-                    ${reportData.savingsProgress.remaining.toFixed(2)}
+                    {formatAmount(reportData.savingsProgress.remaining)}
                   </span>
                 </div>
               </div>
               <div className="text-center mt-2 text-sm text-gray-500">
-                {reportData.savingsProgress.isOnTrack ? '🎯 On track to reach goal' : '⚠️ Needs adjustment'}
+                {reportData.savingsProgress.is_on_track ? '🎯 On track to reach goal' : '⚠️ Needs adjustment'}
               </div>
             </div>
           )}

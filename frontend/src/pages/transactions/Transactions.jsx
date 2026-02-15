@@ -11,8 +11,11 @@ import {
 } from 'react-icons/fi';
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
 import api from '../../services/api';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const Transactions = () => {
+  const { formatAmount } = useCurrency();
+  
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -54,18 +57,26 @@ const Transactions = () => {
 
       const response = await api.get('/transactions', { params });
 
-      if (response.data.success) {
-        setTransactions(response.data.data.transactions);
-        setPagination(response.data.data.pagination);
+      if (response.data?.success) {
+        const transactionsData = response.data.data?.transactions ?? [];
+        const paginationData = response.data.data?.pagination ?? {
+          page: 1,
+          limit: 20,
+          total: 0,
+          pages: 1,
+        };
+
+        setTransactions(transactionsData);
+        setPagination(paginationData);
 
         // Calculate stats from transactions
-        const income = response.data.data.transactions
-          .filter(t => t.type === 'income')
-          .reduce((sum, t) => sum + t.amount, 0);
+        const income = transactionsData
+          .filter(t => t?.type === 'income')
+          .reduce((sum, t) => sum + (t?.amount ?? 0), 0);
 
-        const expenses = response.data.data.transactions
-          .filter(t => t.type === 'expense')
-          .reduce((sum, t) => sum + t.amount, 0);
+        const expenses = transactionsData
+          .filter(t => t?.type === 'expense')
+          .reduce((sum, t) => sum + (t?.amount ?? 0), 0);
 
         setStats({
           totalIncome: income,
@@ -83,8 +94,8 @@ const Transactions = () => {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/categories');
-      if (response.data.success) {
-        setCategories(response.data.data.categories);
+      if (response.data?.success) {
+        setCategories(response.data.data?.categories ?? []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -123,6 +134,18 @@ const Transactions = () => {
   const exportTransactions = () => {
     // Implement export functionality
     console.log('Export transactions');
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      type: '',
+      category_id: '',
+      startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+      endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
+      payment_method: '',
+      is_recurring: '',
+    });
   };
 
   return (
@@ -191,8 +214,8 @@ const Transactions = () => {
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
+                <option key={category?.id} value={category?.id}>
+                  {category?.name}
                 </option>
               ))}
             </select>
@@ -283,15 +306,7 @@ const Transactions = () => {
               Apply Filters
             </button>
             <button
-              onClick={() => setFilters({
-                search: '',
-                type: '',
-                category_id: '',
-                startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-                endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
-                payment_method: '',
-                is_recurring: '',
-              })}
+              onClick={clearFilters}
               className="btn-secondary"
             >
               Clear Filters
@@ -314,7 +329,7 @@ const Transactions = () => {
             <div>
               <p className="text-sm font-medium text-green-600">Total Income</p>
               <p className="mt-2 text-3xl font-bold text-gray-900">
-                ${stats.totalIncome.toFixed(2)}
+                {formatAmount(stats.totalIncome)}
               </p>
             </div>
             <FiTrendingUp className="h-8 w-8 text-green-600" />
@@ -327,7 +342,7 @@ const Transactions = () => {
             <div>
               <p className="text-sm font-medium text-red-600">Total Expenses</p>
               <p className="mt-2 text-3xl font-bold text-gray-900">
-                ${stats.totalExpenses.toFixed(2)}
+                {formatAmount(stats.totalExpenses)}
               </p>
             </div>
             <FiTrendingDown className="h-8 w-8 text-red-600" />
@@ -340,14 +355,14 @@ const Transactions = () => {
             <div>
               <p className="text-sm font-medium text-blue-600">Net Balance</p>
               <p className="mt-2 text-3xl font-bold text-gray-900">
-                ${stats.netBalance.toFixed(2)}
+                {formatAmount(stats.netBalance)}
               </p>
             </div>
             <FiTrendingUp className="h-8 w-8 text-blue-600" />
           </div>
-          <p className={`text-sm mt-2 ${stats.netBalance >= 0 ? 'text-blue-600' : 'text-red-600'
+          <p className={`text-sm mt-2 ${(stats.netBalance ?? 0) >= 0 ? 'text-blue-600' : 'text-red-600'
             }`}>
-            {stats.netBalance >= 0 ? 'Positive cash flow' : 'Negative cash flow'}
+            {(stats.netBalance ?? 0) >= 0 ? 'Positive cash flow' : 'Negative cash flow'}
           </p>
         </div>
       </div>
@@ -362,7 +377,7 @@ const Transactions = () => {
               </div>
             ))}
           </div>
-        ) : transactions.length === 0 ? (
+        ) : !transactions?.length ? (
           <div className="text-center py-12">
             <h3 className="mt-4 text-lg font-medium text-gray-900">No transactions found</h3>
             <p className="mt-2 text-gray-500">Try adjusting your filters or add a new transaction.</p>
@@ -402,25 +417,24 @@ const Transactions = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {transactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-gray-50">
+                  <tr key={transaction?.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                          }`}>
-                          {transaction.type === 'income' ? (
-                            <FiTrendingUp className={`h-5 w-5 ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                              }`} />
+                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                          transaction?.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+                        }`}>
+                          {transaction?.type === 'income' ? (
+                            <FiTrendingUp className="h-5 w-5 text-green-600" />
                           ) : (
-                            <FiTrendingDown className={`h-5 w-5 ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                              }`} />
+                            <FiTrendingDown className="h-5 w-5 text-red-600" />
                           )}
                         </div>
                         <div className="ml-4">
                           <div className="font-medium text-gray-900">
-                            {transaction.description}
+                            {transaction?.description}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {transaction.location || 'No location'}
+                            {transaction?.location || 'No location'}
                           </div>
                         </div>
                       </div>
@@ -429,48 +443,51 @@ const Transactions = () => {
                       <div className="flex items-center">
                         <div
                           className="h-3 w-3 rounded-full mr-2"
-                          style={{ backgroundColor: transaction.Category?.color }}
+                          style={{ backgroundColor: transaction?.Category?.color }}
                         />
                         <span className="text-sm text-gray-900">
-                          {transaction.Category?.name || 'Uncategorized'}
+                          {transaction?.Category?.name || 'Uncategorized'}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {format(new Date(transaction.date), 'MMM d, yyyy')}
-                      <div className="text-gray-500 text-xs">
-                        {format(new Date(transaction.date), 'h:mm a')}
-                      </div>
+                      {transaction?.date && format(new Date(transaction.date), 'MMM d, yyyy')}
+                      {transaction?.date && (
+                        <div className="text-gray-500 text-xs">
+                          {format(new Date(transaction.date), 'h:mm a')}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                        {transaction.payment_method}
+                        {transaction?.payment_method}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                        {transaction.type === 'income' ? '+' : '-'}
-                        ${transaction.amount.toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`badge ${getStatusColor(transaction.status)}`}>
-                        {transaction.is_cleared ? 'Cleared' : 'Pending'}
-                      </span>
-                      {transaction.is_recurring && (
+                      {transaction?.is_recurring && (
                         <span className="badge badge-info ml-2">Recurring</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`font-semibold ${
+                        transaction?.type === 'income' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction?.type === 'income' ? '+' : '-'}
+                        {formatAmount(transaction?.amount ?? 0)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`badge ${getStatusColor(transaction?.status)}`}>
+                        {transaction?.is_cleared ? 'Cleared' : 'Pending'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
-                        to={`/transactions/${transaction.id}`}
+                        to={`/transactions/${transaction?.id}`}
                         className="text-primary-600 hover:text-primary-900 mr-4"
                       >
                         View
                       </Link>
                       <Link
-                        to={`/transactions/edit/${transaction.id}`}
+                        to={`/transactions/edit/${transaction?.id}`}
                         className="text-gray-600 hover:text-gray-900"
                       >
                         Edit
@@ -482,10 +499,12 @@ const Transactions = () => {
             </table>
 
             {/* Pagination */}
-            {pagination.pages > 1 && (
+            {pagination?.pages > 1 && (
               <div className="px-6 py-4 border-t flex items-center justify-between">
                 <div className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{((pagination.page - 1) * pagination.limit) + 1}</span> to{' '}
+                  Showing <span className="font-medium">
+                    {((pagination.page - 1) * pagination.limit) + 1}
+                  </span> to{' '}
                   <span className="font-medium">
                     {Math.min(pagination.page * pagination.limit, pagination.total)}
                   </span>{' '}
